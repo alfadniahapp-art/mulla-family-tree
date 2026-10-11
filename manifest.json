@@ -9,16 +9,18 @@
   "theme_color": "#0a3d2e",
   "lang": "ar",
   "dir": "rtl",
-  "icons": [
-    {
-      "src": "https://raw.githubusercontent.com/alfadniahapp-art/mulla-family-tree/main/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/alfadniahapp-art/mulla-family-tree/main/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
+  
+"icons": [
+  {
+    "src": "logo.png",
+    "sizes": "192x192",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },
+  {
+    "src": "logo.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }
+]
