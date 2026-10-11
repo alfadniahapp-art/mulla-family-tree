@@ -1,0 +1,4871 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شجرة أنساب الفادنية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+      
+      /* ============================================
+   تطبيق شجرة العائلة - الأنماط الكاملة
+   الجزء 2أ: المتغيرات + الأساسيات + الشاشات + الأزرار
+   ============================================ */
+
+/* ----- المتغيرات (الألوان والقياسات) ----- */
+:root {
+  --primary: #0a3d2e;
+  --primary-light: #145a44;
+  --primary-dark: #062a1f;
+  --gold: #d4af37;
+  --gold-light: #e8c96a;
+  --gold-dark: #b8942a;
+
+  --bg: #f5f2ea;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --text: #1a1a1a;
+  --text-secondary: #5a5a5a;
+  --text-muted: #8a8a8a;
+  --text-inverse: #ffffff;
+
+  --border: #e0dcd0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  --header-height: 64px;
+  --action-bar-height: 72px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --font-body: 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-title: 'Tajawal', 'Cairo', system-ui, sans-serif;
+
+  --transition: 0.25s ease;
+}
+
+body.dark {
+  --primary: #0d4a37;
+  --primary-light: #1a6b50;
+  --primary-dark: #062a1f;
+  --bg: #0f1419;
+  --bg-card: #1a2029;
+  --bg-elevated: #232b36;
+  --text: #e8e8e8;
+  --text-secondary: #b0b0b0;
+  --text-muted: #808080;
+  --border: #2a323d;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ----- الأساسيات ----- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  direction: rtl;
+  transition: background var(--transition), color var(--transition);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  color: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ----- شاشة التحميل ----- */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: var(--gold);
+  z-index: 9999;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ----- شاشة الترحيب ----- */
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-inverse);
+  padding: 30px;
+  text-align: center;
+  z-index: 1000;
+  gap: 15px;
+}
+
+.welcome-logo {
+  margin-bottom: 10px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.welcome-title {
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gold);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin-bottom: 5px;
+}
+
+.welcome-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 30px;
+}
+
+.welcome-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.welcome-note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 15px;
+}
+
+/* ----- الأزرار العامة ----- */
+.btn-primary, .btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
+  width: 100%;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--primary-dark);
+}
+
+.btn-primary:active {
+  background: var(--gold-dark);
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:active {
+  background: var(--primary);
+  color: var(--text-inverse);
+  transform: scale(0.98);
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--text-inverse);
+  width: auto;
+  white-space: nowrap;
+}
+
+.btn-close {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+body.dark .btn-close {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-close:active {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ----- التطبيق الرئيسي ----- */
+.main-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ----- الهيدر ----- */
+.app-header {
+  height: var(--header-height);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), opacity var(--transition);
+  z-index: 100;
+}
+
+.app-header.hide {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.platform-title {
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gold);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* ----- شريط الأزرار الموحد ----- */
+.action-bar {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-around;
+  align-items: stretch;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  height: var(--action-bar-height);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), opacity var(--transition);
+  z-index: 99;
+}
+
+.action-bar.hide {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.action-btn:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.action-btn.active {
+  color: var(--primary);
+}
+
+.action-btn.active .action-icon {
+  transform: scale(1.15);
+}
+
+.action-icon {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform var(--transition);
+}
+
+.action-label {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ----- منطقة الشجرة ----- */
+.tree-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #f5f2ea;
+  background-image: radial-gradient(circle, rgba(212, 175, 55, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  touch-action: none;
+}
+
+.tree-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+
+.tree-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: var(--text-secondary);
+  padding: 30px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+}
+
+.tree-empty p {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.tree-empty .btn-primary {
+  width: auto;
+  padding: 12px 24px;
+}
+
+/* ----- الزر العائم ----- */
+.fab-menu {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--gold);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  z-index: 98;
+  transition: all var(--transition);
+}
+
+.fab-menu:active {
+  transform: scale(0.9);
+}
+
+/* ===== البطاقة السفلية (Bottom Sheet) ===== */
+.bottom-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bottom-sheet-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bottom-sheet-content {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px 20px 30px;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  margin: 0 auto 15px;
+}
+
+/* ===== محتوى البطاقة السفلية (ديناميكي) ===== */
+.person-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.person-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.person-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.person-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.person-name {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.person-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+}
+
+.detail-row .detail-label {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 70px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.detail-actions .btn-secondary {
+  flex: 1;
+  min-width: 90px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* ===== القائمة الجانبية (Drawer) ===== */
+.side-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  flex-direction: row;
+}
+
+.drawer-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-overlay);
+  animation: fadeIn 0.2s ease;
+}
+
+.drawer-content {
+  position: relative;
+  width: 280px;
+  max-width: 85vw;
+  background: var(--bg-card);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: slideRight 0.3s ease;
+  overflow-y: auto;
+}
+
+@keyframes slideRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  background: var(--primary);
+  color: var(--text-inverse);
+}
+
+.drawer-header h2 {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.drawer-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  transition: background var(--transition);
+  border-right: 3px solid transparent;
+}
+
+.drawer-item:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.drawer-item.active {
+  background: rgba(212, 175, 55, 0.1);
+  border-right-color: var(--gold);
+  color: var(--primary);
+}
+
+body.dark .drawer-item.active {
+  color: var(--gold);
+}
+
+.drawer-icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.drawer-footer {
+  padding: 15px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.drawer-version {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== النوافذ المنبثقة (Modals) ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  max-height: 90vh;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.25s ease;
+  overflow: hidden;
+  opacity: 1 !important;
+transform: scale(1) !important;
+animation: none !important;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.modal-footer .btn-primary,
+.modal-footer .btn-secondary {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+/* ===== حقول النماذج ===== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="password"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  transition: border-color var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--gold);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.code-display {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.code-display input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+body.dark .code-display input {
+  color: var(--gold);
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-row .btn-secondary {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 15px 0;
+}
+
+.stats-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+/* ===== نافذة PIN ===== */
+.pin-modal {
+  max-width: 320px;
+}
+
+.pin-description {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+}
+
+.pin-input {
+  width: 100%;
+  padding: 18px;
+  font-size: 28px;
+  letter-spacing: 12px;
+  text-align: center;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.pin-input:focus {
+  border-color: var(--gold);
+}
+
+/* ===== سجل التعديلات ===== */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border-right: 3px solid var(--gold);
+  font-size: 13px;
+}
+
+.history-item .history-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ===== نافذة الدعوة ===== */
+.invite-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.invite-code {
+  font-family: monospace;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  text-align: center;
+  color: var(--primary);
+  background: var(--bg);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--gold);
+  margin-bottom: 15px;
+}
+
+body.dark .invite-code {
+  color: var(--gold);
+}
+
+.invite-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.invite-info p {
+  margin: 4px 0;
+}
+
+/* ===== الإشعارات (Toast) ===== */
+.toast-container {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast {
+  background: var(--primary);
+  color: var(--text-inverse);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease;
+  text-align: center;
+}
+
+.toast.success {
+  background: #16a34a;
+}
+
+.toast.error {
+  background: #dc2626;
+}
+
+.toast.warning {
+  background: #d97706;
+}
+
+@keyframes toastIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== عقد الشجرة ===== */
+.tree-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform var(--transition);
+  user-select: none;
+}
+
+.tree-node:active {
+  transform: scale(0.95);
+}
+
+.tree-node-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 105px;
+  min-height: 75px;
+  padding: 10px 8px;
+  background: linear-gradient(145deg, #0a3d2e, #145a44);
+  border: 2px solid #d4af37;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+  transition: all var(--transition);
+}
+.tree-node.female .tree-node-card {
+  background: linear-gradient(145deg, #0a3d2e, #1a6b50);
+  border-color: #e8c96a;
+}
+
+.tree-node.selected .tree-node-card {
+  box-shadow: 0 0 0 3px #d4af37, 0 0 20px rgba(212, 175, 55, 0.7);
+  transform: scale(1.08);
+}
+
+.tree-node-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4af37;
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-word;
+  max-width: 100%;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.tree-node-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  background: var(--gold);
+  color: var(--primary-dark);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+/* ===== خطوط الاتصال ===== */
+.tree-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.tree-lines line,
+.tree-lines path {
+  stroke: #d4af37;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.dark .tree-lines line,
+body.dark .tree-lines path {
+  stroke: var(--gold);
+}
+
+/* ===== العرض المضغوط ===== */
+body.compact .tree-node-card {
+  width: 70px;
+  min-height: 55px;
+  padding: 5px 4px;
+}
+
+body.compact .tree-node-name {
+  font-size: 10px;
+}
+
+body.compact .action-bar {
+  height: 60px;
+}
+
+body.compact .action-icon {
+  font-size: 18px;
+}
+
+body.compact .action-label {
+  font-size: 10px;
+}
+
+/* ===== شريط التمرير ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ===== استجابة للشاشات الأكبر ===== */
+@media (min-width: 768px) {
+  .welcome-title {
+    font-size: 40px;
+  }
+  
+  .platform-title {
+    font-size: 30px;
+  }
+  
+  .action-icon {
+    font-size: 26px;
+  }
+  
+  .action-label {
+    font-size: 12px;
+  }
+}
+
+/* ===== دعم الوضع الآمن للآيفون ===== */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .action-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .fab-menu {
+    bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   القائمة الدائرية (Pie Menu) - تصميم احترافي
+   ============================================ */
+
+.pie-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.pie-menu.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* الخلفية المعتمة */
+.pie-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* حاوية الأزرار */
+.pie-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* الزر الدائري */
+.pie-item {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.pie-menu.active .pie-item {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.pie-item:active {
+  transform: translate(-50%, -50%) scale(0.92) !important;
+  background: var(--gold);
+}
+
+.pie-item-icon {
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-item-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--gold);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.2s ease;
+}
+
+.pie-item:active .pie-item-icon svg {
+  stroke: var(--primary-dark);
+}
+
+.pie-item-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.pie-item:active .pie-item-label {
+  color: var(--primary-dark);
+}
+
+/* في الوضع الليلي */
+body.dark .pie-item {
+  background: #232b36;
+  border-color: var(--gold);
+}
+
+/* الوضع الليلي للشجرة */
+body.dark .tree-container {
+  background: #0f1419;
+  background-image: radial-gradient(circle, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+body.dark .tree-node-card {
+  background: linear-gradient(145deg, #1a2029, #232b36);
+  border-color: #d4af37;
+}
+
+body.dark .tree-node-name {
+  color: #e8c96a;
+}
+
+body.dark .pie-item-label {
+  color: #e8e8e8;
+}
+
+/* حركة الظهور المتتالي */
+.pie-menu.active .pie-item:nth-child(1) { transition-delay: 0.00s; }
+.pie-menu.active .pie-item:nth-child(2) { transition-delay: 0.03s; }
+.pie-menu.active .pie-item:nth-child(3) { transition-delay: 0.06s; }
+.pie-menu.active .pie-item:nth-child(4) { transition-delay: 0.09s; }
+.pie-menu.active .pie-item:nth-child(5) { transition-delay: 0.12s; }
+.pie-menu.active .pie-item:nth-child(6) { transition-delay: 0.15s; }
+
+/* الزر المركزي (الغلق) */
+.pie-center {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.pie-menu.active .pie-center {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.pie-center:active {
+  background: var(--gold);
+  color: var(--primary-dark);
+}
+
+/* ===== تحسينات للشاشات الصغيرة ===== */
+@media (max-width: 400px) {
+  .pie-item {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .pie-item-icon {
+    font-size: 18px;
+  }
+  
+  .pie-item-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .pie-item-label {
+    font-size: 8px;
+  }
+}
+
+/* ============================================
+   أنماط نافذة الانضمام بكود
+   ============================================ */
+
+.join-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+#inputJoinCode {
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  color: var(--primary);
+  background: var(--bg);
+  border: 2px solid var(--gold);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  direction: ltr;
+}
+
+body.dark #inputJoinCode {
+  color: var(--gold);
+  background: var(--bg-card);
+}
+
+#inputJoinCode:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+/* أزرار الأكواد في الإعدادات */
+.codes-display {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-row label {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 100px;
+  color: var(--text-secondary);
+}
+
+.code-row input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  direction: ltr;
+}
+
+body.dark .code-row input {
+  color: var(--gold);
+  background: var(--bg-card);
+}
+
+.code-row .btn-small {
+  padding: 8px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* زر "الدخول بكود" في شاشة الترحيب */
+#btnJoinByCode {
+  background: transparent;
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+#btnJoinByCode:active {
+  background: var(--gold);
+  color: var(--primary-dark);
+  transform: scale(0.98);
+}
+
+/* ============================================
+   حقوق التصميم
+   ============================================ */
+  .welcome-credit {
+  font-size: 18px;
+  color: #d4af37 !important;
+  text-align: center;
+  margin-top: 25px;
+  line-height: 1.9;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.drawer-footer .drawer-version {
+  font-size: 15px;
+  color: var(--primary);
+  text-align: center;
+  margin: 4px 0;
+  font-weight: 700;
+}
+
+/* ============================================
+   معلومات المستخدم في القائمة الجانبية
+   ============================================ */
+.drawer-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: var(--primary);
+  color: var(--text-inverse);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.drawer-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.drawer-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-role {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 3px;
+}
+.tree-node-level {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--primary);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--gold);
+  z-index: 5;
+}
+
+body.dark .tree-node-level {
+  background: var(--bg-card);
+  color: var(--gold);
+}
+.tree-node-title {
+  font-size: 10px;
+  color: rgba(212, 175, 55, 0.75);
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 3px;
+  font-weight: 500;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+body.dark .tree-node-title {
+  color: rgba(212, 175, 55, 0.6);
+}
+
+
+/* المتوفى */
+.tree-node.deceased .tree-node-card {
+  filter: grayscale(0.6);
+  opacity: 0.85;
+}
+
+    </style>
+</>
+<body>
+      
+  <!-- ===== شاشة التحميل ===== -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جارٍ التحميل...</div>
+  </div>
+
+  <!-- ===== شاشة الترحيب / الدخول ===== -->
+  <div id="welcomeScreen" class="welcome-screen hidden">
+    <div class="welcome-logo">
+      <svg viewBox="0 0 100 100" width="110" height="110">
+        <circle cx="50" cy="50" r="48" fill="#0a3d2e" stroke="#d4af37" stroke-width="3"/>
+        <path d="M50 20 L50 75 M50 45 L30 30 M50 55 L70 40 M50 65 L32 55 M50 70 L68 60" stroke="#d4af37" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="welcome-title">شجرة أنساب الفادنية شرق</h1>
+    <p class="welcome-subtitle">تطبيق شجرة العائلة التفاعلي</p>
+    <div class="welcome-buttons">
+      <button id="btnGoogleLogin" class="btn-primary">
+        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:middle;margin-left:8px;">
+          <path fill="#0a3d2e" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#0a3d2e" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#0a3d2e" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#0a3d2e" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        الدخول بحساب Google
+      </button>
+      <button id="btnJoinByCode" class="btn-secondary">
+  🔑 الدخول بكود دعوة
+</button>
+    </div>
+    <p class="welcome-note">بياناتك محفوظة بأمان في السحابة</p>
+    <p class="welcome-credit">تصميم: Abu Almulla<br>0922008009</p>
+  </div>
+
+  <!-- ===== التطبيق الرئيسي ===== -->
+  <div id="mainApp" class="main-app hidden">
+
+    <!-- الهيدر -->
+    <header id="appHeader" class="app-header">
+      <h1 id="platformTitle" class="platform-title">شجرة أنساب الفادنية شرق</h1>
+    </header>
+
+    <!-- شريط الأزرار الموحد -->
+    <nav id="actionBar" class="action-bar">
+      <button class="action-btn" data-action="menu" title="القائمة">
+        <span class="action-icon">☰</span>
+        <span class="action-label">القائمة</span>
+      </button>
+      <button class="action-btn active" data-action="tree" title="الشجرة">
+        <span class="action-icon">🌳</span>
+        <span class="action-label">الشجرة</span>
+      </button>
+      <button class="action-btn" data-action="persons" title="الأفراد">
+        <span class="action-icon">👥</span>
+        <span class="action-label">الأفراد</span>
+      </button>
+      <button class="action-btn" data-action="add" title="إضافة">
+        <span class="action-icon">➕</span>
+        <span class="action-label">إضافة</span>
+      </button>
+      <button class="action-btn" data-action="pie" title="فطيرة">
+        <span class="action-icon">🔵</span>
+        <span class="action-label">فطيرة</span>
+      </button>
+      <button class="action-btn" data-action="settings" title="الإعدادات">
+        <span class="action-icon">⚙️</span>
+        <span class="action-label">إعدادات</span>
+      </button>
+      <button class="action-btn" data-action="theme" title="الوضع الليلي">
+        <span class="action-icon">🌙</span>
+        <span class="action-label">ليلي</span>
+      </button>
+      <button class="action-btn" data-action="relation" title="القرابة">
+  <span class="action-icon">🔗</span>
+  <span class="action-label">القرابة</span>
+</button>
+      <button class="action-btn" data-action="navigate"><span class="action-icon">📍</span><span class="action-label">تنقل</span></button>
+      <button class="action-btn" data-action="zoomOut"><span class="action-icon">🔍</span><span class="action-label">تصغير</span></button>
+
+    </nav>
+
+    <!-- منطقة عرض الشجرة -->
+    <main id="treeContainer" class="tree-container">
+      <div id="treeCanvas" class="tree-canvas">
+        <!-- ستُرسم الشجرة هنا -->
+      </div>
+      <div class="tree-empty hidden" id="treeEmpty">
+        <div class="empty-icon">🌳</div>
+        <p>لا يوجد أفراد بعد</p>
+        <button class="btn-primary" id="btnAddFirst">إضافة أول فرد</button>
+      </div>
+    </main>
+
+    <!-- زر عائم يظهر عند اختفاء الشريط -->
+    <button id="fabMenu" class="fab-menu hidden" title="القائمة">
+      <span>☰</span>
+    </button>
+
+  </div>
+  
+<!-- ===== البطاقة السفلية (Bottom Sheet) ===== -->
+<div id="bottomSheet" class="bottom-sheet hidden">
+  <div class="bottom-sheet-overlay"></div>
+  <div class="bottom-sheet-content">
+    <div class="bottom-sheet-handle"></div>
+    <div id="bottomSheetBody">
+      <!-- المحتوى الديناميكي -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== القائمة الجانبية (Drawer) ===== -->
+<div id="sideDrawer" class="side-drawer hidden">
+  <div class="drawer-overlay"></div>
+  <div class="drawer-content">
+    <div class="drawer-header">
+      <h2>القائمة</h2>
+      <button id="btnCloseDrawer" class="btn-close">✕</button>
+    </div>
+    <div class="drawer-user" id="drawerUser">
+  <div class="drawer-user-avatar" id="drawerUserAvatar">؟</div>
+  <div class="drawer-user-info">
+    <div class="drawer-user-name" id="drawerUserName">جارٍ التحميل...</div>
+    <div class="drawer-user-role" id="drawerUserRole">—</div>
+  </div>
+</div>
+    <nav class="drawer-nav">
+      <button class="drawer-item" data-nav="tree">
+        <span class="drawer-icon">🌳</span>
+        <span>الشجرة</span>
+      </button>
+      <button class="drawer-item" data-nav="persons">
+        <span class="drawer-icon">👥</span>
+        <span>الأفراد</span>
+      </button>
+      <button class="drawer-item" data-nav="add">
+        <span class="drawer-icon">➕</span>
+        <span>إضافة فرد</span>
+      </button>
+      <button class="drawer-item" data-nav="pie">
+        <span class="drawer-icon">🔵</span>
+        <span>القائمة الدائرية</span>
+      </button>
+      <button class="drawer-item" data-nav="backup">
+        <span class="drawer-icon">💾</span>
+        <span>نسخ احتياطي</span>
+      </button>
+      <button class="drawer-item" data-nav="history">
+        <span class="drawer-icon">📜</span>
+        <span>سجل التعديلات</span>
+      </button>
+      <button class="drawer-item" data-nav="settings">
+        <span class="drawer-icon">⚙️</span>
+        <span>الإعدادات</span>
+      </button>
+      <button class="drawer-item" data-nav="logout">
+        <span class="drawer-icon">🚪</span>
+        <span>تسجيل الخروج</span>
+      </button>
+    </nav>
+    <div class="drawer-footer">
+  <p class="drawer-version">تصميم: Abu Almulla</p>
+  <p class="drawer-version">0922008009</p>
+</div>
+  </div>
+</div>
+
+<!-- ===== نافذة الإعدادات ===== -->
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>⚙️ الإعدادات</h2>
+      <button id="btnCloseSettings" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label for="inputPlatformName">📝 اسم المنصة (يظهر في الأعلى)</label>
+        <input type="text" id="inputPlatformName" placeholder="شجرة أنساب الفادنية شرق" maxlength="40">
+        <small class="form-hint">سيظهر هذا الاسم لجميع المستخدمين</small>
+      </div>
+
+      <div class="form-group">
+  <label>🔑 أكواد الانضمام</label>
+  <div class="codes-display">
+    <div class="code-row">
+      <label>✏️ كود المحرر:</label>
+      <input type="text" id="editorCodeInput" maxlength="6">
+      <button class="btn-small" id="btnCopyEditorCode">نسخ</button>
+    </div>
+    <div class="code-row">
+      <label>👁️ كود المشاهد:</label>
+      <input type="text" id="viewerCodeInput" maxlength="6">
+      <button class="btn-small" id="btnCopyViewerCode">نسخ</button>
+    </div>
+  </div>
+  <small class="form-hint">كود المحرر: لمن يضيف ويعدل. كود المشاهد: لمن يقرأ فقط.</small>
+</div>
+
+      <div class="form-group">
+        <label>👤 دورك الحالي</label>
+        <input type="text" id="selectRole" readonly>
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-group">
+        <label>🔒 قفل PIN</label>
+        <div class="btn-row">
+          <button id="btnSetPin" class="btn-secondary">تعيين PIN</button>
+          <button id="btnRemovePin" class="btn-secondary hidden">إزالة PIN</button>
+        </div>
+        <small class="form-hint">يُطلب عند فتح التطبيق</small>
+      </div>
+
+      <div class="form-group">
+        <label>💾 النسخ الاحتياطي</label>
+        <div class="form-group">
+  <label>🔍 عائلاتك المسجلة</label>
+  <div class="btn-row">
+    <button id="btnBrowseFamilies" class="btn-secondary" style="background:var(--gold); color:var(--primary-dark); font-weight:700;">📋 استعراض كل العائلات</button>
+  </div>
+  <small class="form-hint">اعرض العائلات المسجلة بحسابك واختر واحدة</small>
+</div>
+        <div class="btn-row">
+          <button id="btnExportJSON" class="btn-secondary">تصدير JSON</button>
+          <button id="btnImportJSON" class="btn-secondary">استيراد JSON</button>
+        </div>
+        <input type="file" id="inputImportJSON" accept=".json" hidden>
+      </div>
+
+      <div class="form-group">
+        <label>🎨 المظهر</label>
+        <div class="btn-row">
+          <button id="btnToggleTheme" class="btn-secondary">🌙 تبديل الوضع</button>
+          <button id="btnToggleCompact" class="btn-secondary">📐 مضغوط</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📊 معلومات</label>
+        <p id="statsText" class="stats-text">عدد الأفراد: 0</p>
+        <p id="syncStatus" class="stats-text">حالة المزامنة: متصل</p>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button id="btnSaveSettings" class="btn-primary">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== نافذة إضافة/تعديل فرد ===== -->
+<div id="personModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="personModalTitle">إضافة فرد</h2>
+      <button id="btnClosePersonModal" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label for="inputPersonName">الاسم الكامل *</label>
+        <input type="text" id="inputPersonName" placeholder="الاسم" required maxlength="60">
+      </div>
+
+      <div class="form-group">
+  <label for="inputPersonTitle">اللقب (اختياري)</label>
+  <input type="text" id="inputPersonTitle" placeholder="مثال: الجد الأكبر" maxlength="40">
+</div>
+
+      <div class="form-group">
+        <label for="selectGender">الجنس</label>
+        <select id="selectGender">
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="selectFather">الأب</label>
+        <select id="selectFather">
+          <option value="">— لا يوجد —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="selectMother">الأم</label>
+        <select id="selectMother">
+          <option value="">— لا يوجد —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="inputBirthYear">سنة الميلاد (اختياري)</label>
+        <input type="number" id="inputBirthYear" placeholder="مثال: 1950" min="1800" max="2100">
+      </div>
+
+      <div class="form-group">
+        <label for="selectRelationType">نوع العلاقة الإضافية (اختياري)</label>
+        <select id="selectRelationType">
+          <option value="biological">طبيعي</option>
+          <option value="adopted">تبنّي</option>
+          <option value="fostered">كفالة</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+  <label for="selectIsAlive">الحالة</label>
+  <select id="selectIsAlive">
+    <option value="alive">🟢 حي</option>
+    <option value="deceased">⚫ متوفى</option>
+  </select>
+</div>
+
+<div class="form-group hidden" id="deathYearGroup">
+  <label for="inputDeathYear">سنة الوفاة (اختياري)</label>
+  <input type="number" id="inputDeathYear" placeholder="مثال: 2020" min="1800" max="2100">
+</div>
+
+      <div class="form-group">
+        <label for="inputNotes">ملاحظات (اختياري)</label>
+        <textarea id="inputNotes" rows="2" placeholder="ملاحظات إضافية..." maxlength="200"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button id="btnCancelPerson" class="btn-secondary">إلغاء</button>
+      <button id="btnSavePerson" class="btn-primary">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== نافذة إضافة علاقة (زوج/زوجة/ابن/ابنة) ===== -->
+<div id="relationModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="relationModalTitle">إضافة علاقة</h2>
+      <button id="btnCloseRelationModal" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body" id="relationModalBody">
+      <!-- المحتوى الديناميكي -->
+    </div>
+    <div class="modal-footer">
+      <button id="btnCancelRelation" class="btn-secondary">إلغاء</button>
+      <button id="btnSaveRelation" class="btn-primary">حفظ</button>
+    </div>
+  </div>
+</div>
+
+  <!-- ===== نافذة PIN ===== -->
+  <div id="pinModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content pin-modal">
+      <div class="modal-header">
+        <h2 id="pinModalTitle">🔒 أدخل PIN</h2>
+        <button id="btnClosePinModal" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="pin-description" id="pinDescription">أدخل الرمز السري للدخول</p>
+        <input type="password" id="inputPin" maxlength="6" inputmode="numeric" placeholder="• • • •" class="pin-input">
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelPin" class="btn-secondary">إلغاء</button>
+        <button id="btnConfirmPin" class="btn-primary">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة سجل التعديلات ===== -->
+  <div id="historyModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📜 سجل التعديلات</h2>
+        <button id="btnCloseHistory" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="historyList" class="history-list">
+          <!-- المحتوى الديناميكي -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة دعوة محرر ===== -->
+  <div id="inviteModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📨 دعوة محرر</h2>
+        <button id="btnCloseInvite" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="invite-text">شارك هذا الكود مع من تريد دعوته للانضمام:</p>
+        <div class="invite-code" id="inviteCodeDisplay">— — — — — —</div>
+        <button id="btnCopyInviteCode" class="btn-primary">نسخ الكود</button>
+        <hr class="divider">
+        <div class="invite-info">
+          <p><strong>👑 المالك:</strong> يضيف ويعدل ويحذف ويوزع الأدوار</p>
+          <p><strong>✏️ المحرر:</strong> يضيف ويعدل الأفراد</p>
+          <p><strong>👁️ المشاهد:</strong> يقرأ فقط</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== إشعارات Toast ===== -->
+  <div id="toastContainer" class="toast-container"></div>
+
+<!-- ===== نافذة الانضمام بكود ===== -->
+<div id="joinModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center;">
+  <div style="background:#ffffff; border-radius:16px; padding:25px; width:90%; max-width:400px; direction:rtl; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+    <h2 style="color:#0a3d2e; text-align:center; margin-bottom:20px; font-size:22px;">🔑 الدخول بكود</h2>
+
+    <label style="display:block; color:#0a3d2e; font-weight:600; margin-bottom:8px; font-size:14px;">الكود (6 أحرف أو أرقام)</label>
+    <input type="text" id="inputJoinCode" maxlength="6" placeholder="مثال: ABC123" style="width:100%; padding:14px; border:2px solid #d4af37; border-radius:10px; font-size:18px; text-align:center; letter-spacing:4px; text-transform:uppercase; margin-bottom:15px; direction:ltr; box-sizing:border-box;">
+
+    <label style="display:block; color:#0a3d2e; font-weight:600; margin-bottom:8px; font-size:14px;">اسمك (اختياري)</label>
+    <input type="text" id="inputJoinName" placeholder="مثال: أحمد" style="width:100%; padding:14px; border:2px solid #e0dcd0; border-radius:10px; font-size:16px; margin-bottom:20px; box-sizing:border-box;">
+
+    <div style="display:flex; gap:10px;">
+      <button id="btnCancelJoin" style="flex:1; padding:14px; background:#f0ede3; color:#0a3d2e; border:none; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer;">إلغاء</button>
+      <button id="btnConfirmJoin" style="flex:1; padding:14px; background:#d4af37; color:#0a3d2e; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer;">دخول</button>
+    </div>
+  </div>
+</div>
+  <!-- ============ نافذة التنقل ============ -->
+<div id="navigationModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>📍 التنقل إلى فرد</h2>
+      <button id="btnCloseNavigation" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <input type="text" id="navSearch" placeholder="🔍 ابحث عن اسم..." style="width:100%; padding:12px 14px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px;">
+      </div>
+      <div id="navList" style="max-height:55vh; overflow-y:auto; padding:4px;"></div>
+    </div>
+  </div>
+</div>
+
+  <!-- ===== نافذة حساب القرابة ===== -->
+<div id="relationResultModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:99999; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+  <div style="background:linear-gradient(145deg, #0a3d2e, #145a44); border:3px solid #d4af37; border-radius:20px; padding:30px 25px; width:100%; max-width:380px; direction:rtl; box-shadow:0 20px 60px rgba(0,0,0,0.5); text-align:center; position:relative;">
+
+    <div style="position:absolute; top:-15px; right:50%; transform:translateX(50%); background:#d4af37; color:#0a3d2e; padding:6px 18px; border-radius:20px; font-size:14px; font-weight:700;">🔗 صلة القرابة</div>
+
+    <div style="margin-top:20px;">
+      <div style="font-size:20px; color:#d4af37; font-weight:700; margin-bottom:5px;" id="relationPerson1">—</div>
+      <div style="font-size:14px; color:rgba(255,255,255,0.6);">⬇️</div>
+      <div style="font-size:20px; color:#d4af37; font-weight:700; margin-top:5px;" id="relationPerson2">—</div>
+    </div>
+
+    <div style="background:rgba(212, 175, 55, 0.15); border:2px dashed #d4af37; border-radius:14px; padding:20px; margin:20px 0;">
+      <div style="font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:8px;">العلاقة</div>
+      <div style="font-size:24px; color:#d4af37; font-weight:800; line-height:1.4;" id="relationText">—</div>
+    </div>
+
+    <button id="btnCloseRelationResult" style="width:100%; padding:15px; background:#d4af37; color:#0a3d2e; border:none; border-radius:12px; font-size:17px; font-weight:800; cursor:pointer;">حسناً</button>
+  </div>
+</div>
+
+
+<!-- لمبة حالة الاتصال -->
+<div id="connection-status" style="position:fixed;top:15px;left:15px;width:15px;height:15px;border-radius:50%;background-color:#ffc107;box-shadow:0 0 5px rgba(0,0,0,0.3);z-index:9999;transition:background-color 0.3s ease;border:2px solid white;"></div>
+
+  <script>
+  // التقاط الأخطاء وإظهارها
+  window.addEventListener('error', (e) => {
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#dc2626;color:white;padding:10px;font-size:12px;z-index:99999;max-height:40vh;overflow:auto;direction:ltr;text-align:left;';
+    errDiv.textContent = '❌ Error: ' + (e.message || e.error?.message || 'Unknown') + ' | ' + (e.filename || '') + ':' + (e.lineno || '');
+    document.body.appendChild(errDiv);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#d97706;color:white;padding:10px;font-size:12px;z-index:99999;max-height:40vh;overflow:auto;direction:ltr;text-align:left;';
+    errDiv.textContent = '⚠️ Promise: ' + (e.reason?.message || e.reason || 'Unknown');
+    document.body.appendChild(errDiv);
+  });
+</script>
+
+<script type="module">
+      
+     /* ============================================
+   تطبيق شجرة العائلة - JavaScript
+   الجزء 1: الاستيراد + الإعداد + المتغيرات + الدوال المساعدة
+   ============================================ */
+
+// ===== 1. استيراد Firebase SDK =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  signInAnonymously,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  serverTimestamp,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
+// ===== 2. إعداد Firebase =====
+const firebaseConfig = {
+  apiKey: "AIzaSyAyIhmjCXyoUeWfIXkv5yjZz2GnOR5vw9E",
+  authDomain: "mulla-family-tree.firebaseapp.com",
+  projectId: "mulla-family-tree",
+  storageBucket: "mulla-family-tree.firebasestorage.app",
+  messagingSenderId: "177486473203",
+  appId: "1:177486473203:web:d69da800db4d2b45049486"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+
+// ===== 3. المتغيرات العامة =====
+const state = {
+  user: null,
+  familyId: null,
+  familyMeta: null,
+  role: null,
+  persons: [],
+  unions: [],
+  parentChild: [],
+  selectedPersonId: null,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  isDark: false,
+  isCompact: false,
+  pin: null,
+  unsubscribers: [],
+  editingPersonId: null,
+  relationFromPersonId: null
+};
+
+
+// ===== 4. الثوابت =====
+const COLLECTIONS = {
+  FAMILIES: "families",
+  META: "meta",
+  MEMBERS: "members",
+  PERSONS: "persons",
+  UNIONS: "unions",
+  PARENT_CHILD: "parent_child",
+  HISTORY: "history"
+};
+
+const ROLES = {
+  OWNER: "owner",
+  EDITOR: "editor",
+  VIEWER: "viewer"
+};
+
+const RELATION_TYPES = {
+  BIOLOGICAL: "biological",
+  ADOPTED: "adopted",
+  FOSTERED: "fostered"
+};
+
+const STORAGE_KEYS = {
+  FAMILY_ID: "ft_familyId",
+  USER_ID: "ft_userId",
+  THEME: "ft_theme",
+  COMPACT: "ft_compact",
+  PIN: "ft_pin",
+  PLATFORM_NAME: "ft_platformName"
+};
+
+
+// ===== 5. الدوال المساعدة =====
+
+function generateId(prefix = "") {
+  return prefix + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+}
+
+function generateInviteCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+function showToast(message, type = "info", duration = 3000) {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+function show(el) {
+  if (typeof el === "string") el = document.getElementById(el);
+  if (el) el.classList.remove("hidden");
+}
+
+function hide(el) {
+  if (typeof el === "string") el = document.getElementById(el);
+  if (el) el.classList.add("hidden");
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return "";
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return date.toLocaleDateString("ar-EG", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function getInitials(name) {
+  if (!name) return "؟";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0);
+  return parts[0].charAt(0) + " " + parts[parts.length - 1].charAt(0);
+}
+
+function canEdit() {
+  return state.role === ROLES.OWNER || state.role === ROLES.EDITOR;
+}
+
+function isOwner() {
+  return state.role === ROLES.OWNER;
+}
+
+function getPersonById(id) {
+  return state.persons.find(p => p.id === id) || null;
+}
+
+function getPersonName(id) {
+  const person = getPersonById(id);
+  return person ? person.name : "غير معروف";
+}
+
+function sortPersonsByName(persons) {
+  return [...persons].sort((a, b) => a.name.localeCompare(b.name, "ar"));
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text || "";
+  return div.innerHTML;
+}
+
+
+// ===== 6. التخزين المحلي =====
+const storage = {
+  get(key, fallback = null) {
+    try {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.warn("localStorage error:", e);
+    }
+  },
+  remove(key) {
+    localStorage.removeItem(key);
+  }
+};
+
+
+// ===== 7. تهيئة التطبيق =====
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 بدء التطبيق...");
+  initTheme();
+  initCompact();
+  initAuth();
+});
+
+function initTheme() {
+  const saved = storage.get(STORAGE_KEYS.THEME, false);
+  if (saved) {
+    document.body.classList.add("dark");
+    state.isDark = true;
+  }
+}
+
+function initCompact() {
+  const saved = storage.get(STORAGE_KEYS.COMPACT, false);
+  if (saved) {
+    document.body.classList.add("compact");
+    state.isCompact = true;
+  }
+}
+
+console.log("✅ الجزء 1 محمّل");
+
+/* ============================================
+   الجزء 2: المصادقة + تحميل البيانات + الانضمام
+   ============================================ */
+
+// ===== 8. تهيئة المصادقة =====
+function initAuth() {
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      console.log("✅ مستخدم مسجل:", user.uid);
+      state.user = user;
+      storage.set(STORAGE_KEYS.USER_ID, user.uid);
+      await handleUserLoggedIn(user);
+    } else {
+      console.log("⚠️ لا يوجد مستخدم");
+      state.user = null;
+      storage.remove(STORAGE_KEYS.USER_ID);
+      showWelcomeScreen();
+    }
+  });
+}
+
+
+// ===== 9. عند تسجيل الدخول =====
+async function handleUserLoggedIn(user) {
+  try {
+    hide("loadingScreen");
+
+    const savedPin = storage.get(STORAGE_KEYS.PIN, null);
+    if (savedPin) {
+      state.pin = savedPin;
+      showPinModal("أدخل الرمز السري للدخول", async (enteredPin) => {
+        if (enteredPin === savedPin) {
+          hide("pinModal");
+          await proceedAfterAuth(user);
+        } else {
+          showToast("❌ الرمز غير صحيح", "error");
+        }
+      });
+      return;
+    }
+
+    await proceedAfterAuth(user);
+  } catch (error) {
+    console.error("خطأ في تسجيل الدخول:", error);
+    showToast("حدث خطأ أثناء تسجيل الدخول", "error");
+  }
+}
+
+
+// ===== 10. المتابعة بعد المصادقة =====
+async function proceedAfterAuth(user) {
+  const pendingCode = storage.get("pendingJoinCode", null);
+  const pendingName = storage.get("pendingJoinName", null);
+
+  if (pendingCode) {
+    storage.remove("pendingJoinCode");
+    storage.remove("pendingJoinName");
+    const joined = await joinFamilyByCode(pendingCode, pendingName);
+    if (joined) return;
+    if (user.isAnonymous) {
+      cleanupListeners();
+      await signOut(auth);
+      return;
+    }
+  }
+
+const familyId = await findUserFamily(user.uid);  if (familyId) {
+    state.familyId = familyId;
+    storage.set(STORAGE_KEYS.FAMILY_ID, familyId);
+    await loadFamilyData(familyId);
+    showMainApp();
+    return;
+  }
+
+  if (user.email || user.providerData.some(p => p.providerId === "google.com")) {
+    await createNewFamily(user);
+  } else {
+    showToast("❌ يجب الدخول بحساب Google أو بكود دعوة", "error");
+    setTimeout(() => {
+      cleanupListeners();
+      signOut(auth);
+    }, 2000);
+  }
+}
+
+
+// ===== 11. البحث عن عائلة المستخدم =====
+async function findUserFamily(userId) {
+  const cached = storage.get(STORAGE_KEYS.FAMILY_ID, null);
+  if (cached) {
+    try {
+      const ref = doc(db, COLLECTIONS.FAMILIES, cached);
+      const snap = await getDoc(ref);
+      if (snap.exists()) return cached;
+    } catch {}
+  }
+
+  // 🔍 بحث شامل: عن كل العائلات المرتبطة بإيميل المستخدم
+  const foundFamilies = [];
+  const userEmail = state.user?.email?.toLowerCase();
+  const userName = state.user?.displayName;
+
+  try {
+    const familiesSnap = await getDocs(collection(db, COLLECTIONS.FAMILIES));
+
+    for (const famDoc of familiesSnap.docs) {
+      const famData = famDoc.data();
+
+      // 1. العائلة التي هو مالكها
+      if (famData.ownerId === userId) {
+        const personsSnap = await getDocs(
+          collection(db, COLLECTIONS.FAMILIES, famDoc.id, COLLECTIONS.PERSONS)
+        );
+        foundFamilies.push({
+          id: famDoc.id,
+          name: famData.name || "بدون اسم",
+          role: ROLES.OWNER,
+          personsCount: personsSnap.size,
+          reason: "أنت المالك"
+        });
+        continue;
+      }
+
+      // 2. البحث في members عن إيميل أو userId مطابق
+      const membersSnap = await getDocs(
+        collection(db, COLLECTIONS.FAMILIES, famDoc.id, COLLECTIONS.MEMBERS)
+      );
+
+      for (const memberDoc of membersSnap.docs) {
+        const mData = memberDoc.data();
+        const matchEmail = userEmail && mData.email && mData.email.toLowerCase() === userEmail;
+        const matchUid = mData.userId === userId;
+        const matchName = userName && mData.displayName && mData.displayName === userName;
+
+        if (matchEmail || matchUid) {
+          const personsSnap = await getDocs(
+            collection(db, COLLECTIONS.FAMILIES, famDoc.id, COLLECTIONS.PERSONS)
+          );
+          foundFamilies.push({
+            id: famDoc.id,
+            name: famData.name || "بدون اسم",
+            role: mData.role || ROLES.VIEWER,
+            personsCount: personsSnap.size,
+            reason: matchEmail ? "بالايميل" : "بالـ UID"
+          });
+          break;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("خطأ في البحث:", e);
+  }
+
+  console.log(`🔍 تم إيجاد ${foundFamilies.length} عائلة`, foundFamilies);
+
+  // ✅ إذا وجدت عائلة واحدة فقط → ادخل مباشرة
+  if (foundFamilies.length === 1) {
+    const only = foundFamilies[0];
+    storage.set("userRole", only.role);
+    showToast(`✅ تم العثور على: ${only.name}`, "success");
+    return only.id;
+  }
+
+  // ✅ إذا وجدت أكثر من عائلة → اعرض قائمة للاختيار
+  if (foundFamilies.length > 1) {
+    return await showFamilyChooser(foundFamilies);
+  }
+
+  // ❌ لا توجد عائلات
+  return null;
+} 
+
+
+// ===== 12. إنشاء عائلة جديدة =====
+async function createNewFamily(user) {
+  try {
+    showToast("جارٍ إنشاء عائلة جديدة...", "info");
+
+    const familyId = generateId("fam_");
+    const editorCode = generateInviteCode();
+    const viewerCode = generateInviteCode();
+    const platformName = "شجرة أنساب الفادنية شرق";
+
+    const familyRef = doc(db, COLLECTIONS.FAMILIES, familyId);
+    await setDoc(familyRef, {
+      name: platformName,
+      editorCode: editorCode,
+      viewerCode: viewerCode,
+      ownerId: user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
+    await setDoc(metaRef, {
+      name: platformName,
+      editorCode: editorCode,
+      viewerCode: viewerCode,
+      ownerId: user.uid,
+      createdAt: serverTimestamp()
+    });
+
+    const memberRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.MEMBERS, user.uid);
+    await setDoc(memberRef, {
+      userId: user.uid,
+      email: user.email || null,
+      displayName: user.displayName || "المالك",
+      role: ROLES.OWNER,
+      joinedAt: serverTimestamp()
+    });
+
+    state.familyId = familyId;
+    state.role = ROLES.OWNER;
+    storage.set(STORAGE_KEYS.FAMILY_ID, familyId);
+    storage.set(STORAGE_KEYS.PLATFORM_NAME, platformName);
+
+    await loadFamilyData(familyId);
+    showMainApp();
+    showToast("✅ تم إنشاء العائلة", "success");
+  } catch (error) {
+    console.error("خطأ في إنشاء العائلة:", error);
+    showToast("❌ فشل إنشاء العائلة", "error");
+  }
+}
+
+
+// ===== 13. تحميل بيانات العائلة ====
+  
+async function loadFamilyData(familyId) {
+  try {
+    console.log("📥 تحميل:", familyId);
+
+    // 1. جلب بيانات العائلة
+    const familyRef = doc(db, COLLECTIONS.FAMILIES, familyId);
+    const familySnap = await getDoc(familyRef);
+
+    // 2. جلب meta
+    const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
+    const metaSnap = await getDoc(metaRef);
+    if (metaSnap.exists()) {
+      state.familyMeta = metaSnap.data();
+      if (state.familyMeta.name) updatePlatformTitle(state.familyMeta.name);
+    }
+
+    // 3. ✅ الأهم: فحص هل أنت المالك (ownerId)؟
+    let isOwnerCheck = false;
+    if (familySnap.exists()) {
+      const famData = familySnap.data();
+      console.log("👑 ownerId:", famData.ownerId);
+      console.log("👤 uid:", state.user.uid);
+      if (famData.ownerId === state.user.uid) {
+        isOwnerCheck = true;
+        state.role = ROLES.OWNER;
+        console.log("✅ أنت المالك");
+      }
+    }
+
+    // 4. إن لم تكن المالك، ابحث في members
+    if (!isOwnerCheck) {
+      const memberRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.MEMBERS, state.user.uid);
+      const memberSnap = await getDoc(memberRef);
+      if (memberSnap.exists()) {
+        state.role = memberSnap.data().role || ROLES.VIEWER;
+      } else {
+      }
+      console.log("ℹ️ دورك من members:", state.role);
+    }
+
+    // 5. خزّن الدور محلياً
+    storage.set("userRole", state.role);
+    console.log("✅ الدور النهائي:", state.role);
+
+    // 6. ابدأ المزامنة
+    startRealtimeListeners(familyId);
+  } catch (error) {
+    console.error("خطأ في التحميل:", error);
+  }
+}
+
+// ===== 14. المستمعين الفوريين =====
+  function startRealtimeListeners(familyId) {
+  const personsRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.PERSONS);
+  const unsubPersons = onSnapshot(personsRef, (snapshot) => {
+    state.persons = snapshot.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name || "",
+        gender: data.gender || "male",
+        title: data.title || "",
+        fatherId: data.fatherId || null,
+        motherId: data.motherId || null,
+        birthYear: data.birthYear || null,
+        deathYear: data.deathYear || null,
+        isAlive: data.isAlive || "alive",
+        relationType: data.relationType || "biological",
+        notes: data.notes || "",
+        order: data.order || 0
+      };
+    });
+    console.log("PERSONS LOADED:", state.persons.length);
+    updateStats();
+    renderTree();
+  });
+  state.unsubscribers.push(unsubPersons);
+
+  const unionsRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.UNIONS);
+  const unsubUnions = onSnapshot(unionsRef, (snapshot) => {
+    state.unions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderTree();
+  });
+  state.unsubscribers.push(unsubUnions);
+
+  const pcRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.PARENT_CHILD);
+  const unsubPC = onSnapshot(pcRef, (snapshot) => {
+    state.parentChild = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderTree();
+  });
+  state.unsubscribers.push(unsubPC);
+
+  const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
+  const unsubMeta = onSnapshot(metaRef, (snapshot) => {
+    if (snapshot.exists()) {
+      state.familyMeta = snapshot.data();
+      if (state.familyMeta.name) updatePlatformTitle(state.familyMeta.name);
+      updateSettingsUI();
+    }
+  });
+  state.unsubscribers.push(unsubMeta);
+}
+  
+
+
+// ===== 15. تنظيف المستمعين =====
+function cleanupListeners() {
+  state.unsubscribers.forEach(unsub => {
+    try { unsub(); } catch (e) {}
+  });
+  state.unsubscribers = [];
+}
+
+
+// ===== 16. الدخول والخروج =====
+async function handleGoogleLogin() {
+  try {
+    showToast("جارٍ تسجيل الدخول...", "info");
+    await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    if (error.code === "auth/popup-closed-by-user") {
+      showToast("تم الإلغاء", "warning");
+    } else {
+      showToast("❌ فشل تسجيل الدخول", "error");
+    }
+  }
+}
+
+async function handleLogout() {
+  try {
+    await signOut(auth);
+    cleanupListeners();
+    storage.remove(STORAGE_KEYS.USER_ID);
+    showToast("تم تسجيل الخروج", "info");
+    setTimeout(() => location.reload(), 800);
+  } catch (error) {
+    console.error("خطأ في الخروج:", error);
+  }
+}
+
+
+// ===== 17. عرض الشاشات =====
+function showWelcomeScreen() {
+  hide("loadingScreen");
+  hide("mainApp");
+  show("welcomeScreen");
+}
+
+function showMainApp() {
+  hide("loadingScreen");
+  hide("welcomeScreen");
+  show("mainApp");
+}
+
+
+// ===== 18. تحديث عنوان المنصة =====
+function updatePlatformTitle(name) {
+  const titleEl = document.getElementById("platformTitle");
+  if (titleEl) titleEl.textContent = name;
+  document.title = name;
+  storage.set(STORAGE_KEYS.PLATFORM_NAME, name);
+}
+
+
+// ===== 19. تحديث الإحصائيات =====
+function updateStats() {
+  const statsEl = document.getElementById("statsText");
+  if (statsEl) statsEl.textContent = `عدد الأفراد: ${state.persons.length}`;
+
+  const emptyEl = document.getElementById("treeEmpty");
+  if (emptyEl) {
+    if (state.persons.length === 0) show(emptyEl);
+    else hide(emptyEl);
+  }
+}
+
+
+// ===== 20. الانضمام بكود =====
+async function findFamilyByCode(code) {
+  const upperCode = code.toUpperCase().trim();
+  const familiesSnap = await getDocs(collection(db, COLLECTIONS.FAMILIES));
+
+  for (const familyDoc of familiesSnap.docs) {
+    const data = familyDoc.data();
+    if (data.editorCode && data.editorCode.toString().trim().toUpperCase() === upperCode) {
+      return { familyId: familyDoc.id, role: ROLES.EDITOR };
+    }
+    if (data.viewerCode && data.viewerCode.toString().trim().toUpperCase() === upperCode) {
+      return { familyId: familyDoc.id, role: ROLES.VIEWER };
+    }
+  }
+  return null;
+}
+
+async function joinFamilyByCode(code, userName) {
+  if (!code) {
+    showToast("❌ أدخل الكود", "error");
+    return false;
+  }
+
+  try {
+    showToast("⏳ جارٍ البحث...", "info");
+
+    const found = await findFamilyByCode(code);
+    if (!found) {
+      showToast("❌ كود غير صحيح", "error");
+      return false;
+    }
+
+    const targetFamily = found.familyId;
+    const role = found.role;
+
+    if (role === ROLES.EDITOR && !(state.user && state.user.email)) {
+      showToast("❌ كود المحرر يتطلب الدخول بحساب Google", "error");
+      return false;
+    }
+
+    const memberRef = doc(db, COLLECTIONS.FAMILIES, targetFamily, COLLECTIONS.MEMBERS, state.user.uid);
+    await setDoc(memberRef, {
+      userId: state.user.uid,
+      email: state.user.email || null,
+      displayName: userName || (role === ROLES.EDITOR ? "محرر" : "مشاهد"),
+      role: role,
+      joinedAt: serverTimestamp()
+    });
+
+    state.familyId = targetFamily;
+    state.role = role;
+    storage.set(STORAGE_KEYS.FAMILY_ID, targetFamily);
+    storage.set("userRole", role);
+
+    await loadFamilyData(targetFamily);
+    showMainApp();
+
+    const roleName = role === ROLES.EDITOR ? "محرر" : "مشاهد";
+    showToast(`✅ تم الانضمام كـ ${roleName}`, "success");
+    return true;
+  } catch (error) {
+    console.error("خطأ في الانضمام:", error);
+    showToast("❌ فشل الانضمام", "error");
+    return false;
+  }
+}
+
+
+// ===== 21. فتح نافذة الانضمام =====
+function openJoinModal() {
+  const jm = document.getElementById("joinModal");
+  if (!jm) return;
+
+  jm.style.display = "flex";
+
+  const codeInput = document.getElementById("inputJoinCode");
+  const nameInput = document.getElementById("inputJoinName");
+  if (codeInput) codeInput.value = "";
+  if (nameInput) nameInput.value = "";
+
+  setTimeout(() => codeInput && codeInput.focus(), 300);
+}
+
+function closeJoinModal() {
+  const jm = document.getElementById("joinModal");
+  if (jm) jm.style.display = "none";
+}
+
+async function confirmJoin() {
+  const codeInput = document.getElementById("inputJoinCode");
+  const nameInput = document.getElementById("inputJoinName");
+  const code = codeInput ? codeInput.value.trim() : "";
+  const name = nameInput ? nameInput.value.trim() : "";
+
+  if (!code) {
+    showToast("❌ أدخل الكود", "error");
+    return;
+  }
+
+  closeJoinModal();
+
+  // مستخدم مسجّل بالفعل: انضمام مباشر
+  if (state.user) {
+    await joinFamilyByCode(code, name);
+    return;
+  }
+
+  // غير مسجّل: نحدد نوع الكود أولاً (إن أمكن) ثم نسجّل الدخول
+  let found = null;
+  let lookupOk = false;
+  try {
+    found = await findFamilyByCode(code);
+    lookupOk = true;
+  } catch (e) {
+    console.warn("تعذر التحقق من الكود قبل تسجيل الدخول:", e);
+  }
+
+  if (lookupOk && !found) {
+    showToast("❌ كود غير صحيح", "error");
+    return;
+  }
+
+  storage.set("pendingJoinCode", code);
+  storage.set("pendingJoinName", name);
+
+  try {
+    if (found && found.role === ROLES.EDITOR) {
+      await signInWithPopup(auth, googleProvider);
+    } else {
+      await signInAnonymously(auth);
+    }
+    // المتابعة تتم داخل onAuthStateChanged -> proceedAfterAuth
+  } catch (error) {
+    storage.remove("pendingJoinCode");
+    storage.remove("pendingJoinName");
+    showToast(found && found.role === ROLES.EDITOR ? "❌ يجب تسجيل Google للمحرر" : "❌ فشل الدخول", "error");
+  }
+}
+
+console.log("✅ الجزء 2 محمّل");
+
+/* ============================================
+   الجزء 3: CRUD للأفراد + العلاقات + السجل + الإعدادات
+   ============================================ */
+
+// ===== 22. إضافة فرد =====
+async function addPerson(personData) {
+  if (!canEdit()) {
+    showToast("❌ ليس لديك صلاحية", "error");
+    return null;
+  }
+
+  try {
+    const personId = generateId("p_");
+    const personRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PERSONS, personId);
+
+    const newPerson = {
+      name: personData.name.trim(),
+      gender: personData.gender || "male",
+      title: personData.title || "",
+      fatherId: personData.fatherId || null,
+      motherId: personData.motherId || null,
+      birthYear: personData.birthYear || null,
+      deathYear: personData.deathYear || null,
+      isAlive: personData.isAlive || "alive",
+      relationType: personData.relationType || "biological",
+      notes: personData.notes || "",
+      order: Date.now(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      createdBy: state.user.uid
+    };
+
+    await setDoc(personRef, newPerson);
+    await logHistory("add", `إضافة فرد: ${newPerson.name}`);
+    showToast("✅ تم الإضافة", "success");
+    return personId;
+  } catch (error) {
+    console.error("خطأ:", error);
+    showToast("❌ فشل الإضافة", "error");
+    return null;
+  }
+}
+
+
+// ===== 23. تعديل فرد =====
+async function updatePerson(personId, updates) {
+  if (!canEdit()) {
+    showToast("❌ ليس لديك صلاحية", "error");
+    return false;
+  }
+
+  try {
+    const personRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PERSONS, personId);
+    await updateDoc(personRef, { ...updates, updatedAt: serverTimestamp() });
+    await logHistory("update", `تعديل فرد: ${updates.name || personId}`);
+    showToast("✅ تم التعديل", "success");
+    return true;
+  } catch (error) {
+    console.error("خطأ:", error);
+    showToast("❌ فشل التعديل", "error");
+    return false;
+  }
+}
+
+
+// ===== 24. حذف فرد =====
+async function deletePerson(personId) {
+  if (!isOwner()) {
+    showToast("❌ الحذف للمالك فقط", "error");
+    return false;
+  }
+
+  const person = getPersonById(personId);
+  if (!person) return false;
+
+  try {
+    const personRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PERSONS, personId);
+    await deleteDoc(personRef);
+    await deleteRelatedRelations(personId);
+    await logHistory("delete", `حذف فرد: ${person.name}`);
+    showToast("✅ تم الحذف", "success");
+    return true;
+  } catch (error) {
+    console.error("خطأ:", error);
+    showToast("❌ فشل الحذف", "error");
+    return false;
+  }
+}
+
+
+// ===== 25. حذف العلاقات المرتبطة =====
+async function deleteRelatedRelations(personId) {
+  const ops = [];
+
+  state.parentChild.forEach(rel => {
+    if (rel.parentId === personId || rel.childId === personId) {
+      ops.push(["delete", doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PARENT_CHILD, rel.id)]);
+    }
+  });
+
+  state.unions.forEach(union => {
+    if (union.husbandId === personId || union.wifeId === personId) {
+      ops.push(["delete", doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.UNIONS, union.id)]);
+    }
+  });
+
+  // فك ارتباط الأبناء بالشخص المحذوف
+  state.persons.forEach(p => {
+    if (p.id === personId) return;
+    const upd = {};
+    if (p.fatherId === personId) upd.fatherId = null;
+    if (p.motherId === personId) upd.motherId = null;
+    if (Object.keys(upd).length > 0) {
+      ops.push(["update", doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PERSONS, p.id), upd]);
+    }
+  });
+
+  for (let i = 0; i < ops.length; i += 400) {
+    const batch = writeBatch(db);
+    ops.slice(i, i + 400).forEach(([type, ref, data]) => {
+      if (type === "delete") batch.delete(ref);
+      else batch.update(ref, data);
+    });
+    await batch.commit();
+  }
+}
+
+
+// ===== 26. إضافة علاقة أب/ابن =====
+async function addParentChildRelation(parentId, childId, relationType = "biological") {
+  if (!canEdit()) return false;
+
+  try {
+    const relationId = generateId("pc_");
+    const relRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.PARENT_CHILD, relationId);
+    await setDoc(relRef, {
+      parentId: parentId,
+      childId: childId,
+      relationType: relationType,
+      createdAt: serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error("خطأ:", error);
+    return false;
+  }
+}
+
+
+// ===== 27. إضافة زواج =====
+async function addUnion(husbandId, wifeId, status = "married") {
+  if (!canEdit()) return false;
+
+  try {
+    const unionId = generateId("u_");
+    const unionRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.UNIONS, unionId);
+    await setDoc(unionRef, {
+      husbandId: husbandId,
+      wifeId: wifeId,
+      status: status,
+      createdAt: serverTimestamp()
+    });
+    await logHistory("add_union", `زواج ${getPersonName(husbandId)} و ${getPersonName(wifeId)}`);
+    return true;
+  } catch (error) {
+    console.error("خطأ:", error);
+    return false;
+  }
+}
+
+
+// ===== 28. الحصول على الأبناء =====
+function getChildren(personId) {
+  const childIds = new Set();
+  state.parentChild.forEach(rel => {
+    if (rel.parentId === personId) childIds.add(rel.childId);
+  });
+  state.persons.forEach(p => {
+    if (p.fatherId === personId || p.motherId === personId) childIds.add(p.id);
+  });
+  return state.persons.filter(p => childIds.has(p.id));
+}
+
+
+// ===== 29. الحصول على الأزواج =====
+function getSpouses(personId) {
+  const spouses = [];
+  state.unions.forEach(union => {
+    let spouseId = null;
+    if (union.husbandId === personId) spouseId = union.wifeId;
+    else if (union.wifeId === personId) spouseId = union.husbandId;
+
+    if (spouseId) {
+      const spouse = getPersonById(spouseId);
+      if (spouse) {
+        spouses.push({ ...spouse, status: union.status || "married", unionId: union.id });
+      }
+    }
+  });
+  return spouses;
+}
+
+
+// ===== 30. الحصول على معرّف الوالد =====
+function getParentId(person) {
+  if (person.fatherId) return person.fatherId;
+  if (person.motherId) return person.motherId;
+  return null;
+}
+
+
+// ===== 31. سجل التعديلات =====
+async function logHistory(action, description) {
+  try {
+    const historyRef = collection(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.HISTORY);
+    await addDoc(historyRef, {
+      action: action,
+      description: description,
+      userId: state.user.uid,
+      userName: state.user.displayName || "مجهول",
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.warn("فشل تسجيل التاريخ:", error);
+  }
+}
+
+
+async function loadHistory() {
+  try {
+    const historyRef = collection(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.HISTORY);
+    const snapshot = await getDocs(historyRef);
+    const history = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+    const listEl = document.getElementById("historyList");
+    if (!listEl) return;
+
+    if (history.length === 0) {
+      listEl.innerHTML = "<p class='stats-text'>لا يوجد سجل</p>";
+      return;
+    }
+
+    listEl.innerHTML = history.slice(0, 100).map(item => `
+      <div class="history-item">
+        <div>${escapeHtml(item.description || "")}</div>
+        <div class="history-time">${formatDate(item.timestamp)} • ${escapeHtml(item.userName || "")}</div>
+      </div>
+    `).join("");
+  } catch (error) {
+    console.error("خطأ:", error);
+  }
+}
+
+
+// ===== 32. تحديث واجهة الإعدادات =====
+function updateSettingsUI() {
+  if (state.familyMeta) {
+    const nameInput = document.getElementById("inputPlatformName");
+    if (nameInput) nameInput.value = state.familyMeta.name || "";
+  }
+
+  const roleInput = document.getElementById("selectRole");
+  if (roleInput) {
+    const roleNames = { "owner": "👑 مالك", "editor": "✏️ محرر", "viewer": "👁️ مشاهد" };
+    roleInput.value = roleNames[state.role] || "غير معروف";
+  }
+
+  const editorInput = document.getElementById("editorCodeInput");
+  if (editorInput && state.familyMeta) {
+    editorInput.value = state.familyMeta.editorCode || "";
+  }
+
+  const viewerInput = document.getElementById("viewerCodeInput");
+  if (viewerInput && state.familyMeta) {
+    viewerInput.value = state.familyMeta.viewerCode || "";
+  }
+}
+
+console.log("✅ الجزء 3 محمّل");
+
+/* ============================================
+   الجزء 4: رسم الشجرة + التكبير/التحريك
+   ============================================ */
+
+const NODE_WIDTH = 120;
+const NODE_HEIGHT = 90;
+const H_GAP = 30;
+const V_GAP = 100;
+
+
+// ===== 33. رسم الشجرة =====
+function renderTree() {
+  const canvas = document.getElementById("treeCanvas");
+  if (!canvas) return;
+
+  canvas.innerHTML = "";
+
+  if (state.persons.length === 0) return;
+
+  const visited = new Set();
+  const layout = [];
+  let currentX = 50;
+  let maxDepth = 0;
+
+  const placeRoot = (root) => {
+    if (visited.has(root.id)) return;
+    const result = layoutSubtree(root, currentX, 50, 0, null, visited);
+    layout.push(...result.nodes);
+    currentX = result.nextX + H_GAP;
+    maxDepth = Math.max(maxDepth, result.maxDepth);
+  };
+
+  findRootPersons().forEach(placeRoot);
+  // أي فرد لم يُرسم (حلقات أو بيانات ناقصة) يُرسم كجذر
+  state.persons.forEach(placeRoot);
+
+  if (layout.length === 0) return;
+
+  const totalWidth = Math.max(currentX + 200, 400);
+  const totalHeight = (maxDepth + 1) * (NODE_HEIGHT + V_GAP) + 100;
+  canvas.style.width = totalWidth + "px";
+  canvas.style.height = totalHeight + "px";
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "tree-lines");
+  svg.setAttribute("width", totalWidth);
+  svg.setAttribute("height", totalHeight);
+  canvas.appendChild(svg);
+
+  const posMap = new Map(layout.map(n => [n.id, n]));
+
+  layout.forEach(node => {
+    const parent = node.parentId ? posMap.get(node.parentId) : null;
+    if (!parent) return;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const x1 = parent.x + NODE_WIDTH / 2;
+    const y1 = parent.y + NODE_HEIGHT;
+    const x2 = node.x + NODE_WIDTH / 2;
+    const y2 = node.y;
+    const midY = (y1 + y2) / 2;
+    if (Math.abs(x1 - x2) < 2) {
+      line.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+    } else {
+      line.setAttribute("d", `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`);
+    }
+    line.setAttribute("stroke", "#d4af37");
+    line.setAttribute("stroke-width", "2.5");
+    line.setAttribute("fill", "none");
+    svg.appendChild(line);
+  });
+
+  layout.forEach(node => {
+    const person = getPersonById(node.id);
+    if (!person) return;
+
+    const nodeEl = document.createElement("div");
+    nodeEl.className = `tree-node ${person.gender === "female" ? "female" : ""}`;
+    if (person.isAlive === "deceased") nodeEl.classList.add("deceased");
+    if (state.selectedPersonId === person.id) nodeEl.classList.add("selected");
+    nodeEl.style.left = node.x + "px";
+    nodeEl.style.top = node.y + "px";
+    nodeEl.style.width = NODE_WIDTH + "px";
+    nodeEl.dataset.personId = person.id;
+
+    let badgeHtml = "";
+    if (person.relationType === "adopted") badgeHtml = '<span class="tree-node-badge">تبنّي</span>';
+    if (person.relationType === "fostered") badgeHtml = '<span class="tree-node-badge">كفالة</span>';
+    if (person.isAlive === "deceased") badgeHtml = '<span class="tree-node-badge">متوفى</span>';
+
+    const level = getPersonLevel(person.id);
+
+    nodeEl.innerHTML = `
+      <div class="tree-node-card">
+        <div class="tree-node-level">${level}</div>
+        ${badgeHtml}
+        <div class="tree-node-name">${escapeHtml(person.name)}</div>
+        ${person.title ? `<div class="tree-node-title">${escapeHtml(person.title)}</div>` : ""}
+      </div>
+    `;
+
+    let longPressTimer = null;
+    let longPressFired = false;
+
+    nodeEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (longPressFired) {
+        longPressFired = false;
+        return;
+      }
+      openPersonCard(person.id);
+    });
+
+    const startPress = () => {
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressFired = true;
+        openPieMenu(person.id);
+      }, 600);
+    };
+    const cancelPress = () => clearTimeout(longPressTimer);
+
+    nodeEl.addEventListener("touchstart", startPress, { passive: true });
+    nodeEl.addEventListener("touchend", cancelPress);
+    nodeEl.addEventListener("touchmove", cancelPress, { passive: true });
+    nodeEl.addEventListener("touchcancel", cancelPress);
+
+    nodeEl.addEventListener("mousedown", startPress);
+    nodeEl.addEventListener("mouseup", cancelPress);
+    nodeEl.addEventListener("mouseleave", cancelPress);
+
+canvas.appendChild(nodeEl);
+  });
+
+  applyTransform();
+
+  // 🎯 تمركز تلقائي على الجذر (المستوى 1)
+  if (!state._hasFocusedInitially && layout.length > 0) {
+    state._hasFocusedInitially = true;
+    const rootNode = layout.find(n => getPersonLevel(n.id) === 1) || layout[0];
+    if (rootNode) {
+      setTimeout(() => {
+        const canvasEl = document.getElementById("treeCanvas");
+        const containerEl = document.getElementById("treeContainer");
+        if (!canvasEl || !containerEl) return;
+        const containerRect = containerEl.getBoundingClientRect();
+        const nodeX = rootNode.x + NODE_WIDTH / 2;
+        const nodeY = rootNode.y + NODE_HEIGHT / 2;
+        state.zoom = 1;
+        state.panX = containerRect.width / 2 - nodeX * state.zoom;
+        state.panY = 60 - nodeY * state.zoom;
+        applyTransform();
+      }, 300);
+    }
+  }
+}
+
+// ===== 34. إيجاد الجذور =====
+function findRootPersons() {
+  const withParentRel = new Set(state.parentChild.map(r => r.childId));
+  return state.persons
+    .filter(p => !p.fatherId && !p.motherId && !withParentRel.has(p.id))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+
+
+// ===== 35. تخطيط الشجرة =====
+// كل عقدة تُرسم مرة واحدة فقط (visited)، والأب يتوسّط أبناءه
+function layoutSubtree(person, startX, startY, depth, parentId, visited) {
+  visited.add(person.id);
+
+  const children = getChildren(person.id)
+    .filter(c => !visited.has(c.id))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  const nodes = [];
+  let maxDepth = depth;
+  let childX = startX;
+  const childRoots = [];
+
+  children.forEach(child => {
+    if (visited.has(child.id)) return;
+    const result = layoutSubtree(child, childX, startY + NODE_HEIGHT + V_GAP, depth + 1, person.id, visited);
+    nodes.push(...result.nodes);
+    childRoots.push(result.nodes[result.nodes.length - 1]);
+    childX = result.nextX;
+    maxDepth = Math.max(maxDepth, result.maxDepth);
+  });
+
+  if (childRoots.length === 0) {
+    nodes.push({ id: person.id, x: startX, y: startY, parentId });
+    return { nodes, nextX: startX + NODE_WIDTH + H_GAP, maxDepth };
+  }
+
+  const parentX = (childRoots[0].x + childRoots[childRoots.length - 1].x) / 2;
+  nodes.push({ id: person.id, x: parentX, y: startY, parentId });
+
+  const nextX = Math.max(childX, parentX + NODE_WIDTH + H_GAP);
+  return { nodes, nextX, maxDepth };
+}
+
+
+// ===== 36. التكبير والتحريك =====
+let touchState = {
+  isPanning: false, isPinching: false,
+  startX: 0, startY: 0, initialPanX: 0, initialPanY: 0,
+  initialDistance: 0, initialZoom: 1
+};
+
+function initZoomPan() {
+  const container = document.getElementById("treeContainer");
+  if (!container) return;
+
+  container.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      touchState.isPanning = true;
+      touchState.startX = e.touches[0].clientX;
+      touchState.startY = e.touches[0].clientY;
+      touchState.initialPanX = state.panX;
+      touchState.initialPanY = state.panY;
+    } else if (e.touches.length === 2) {
+      touchState.isPinching = true;
+      touchState.isPanning = false;
+      touchState.initialDistance = getTouchDistance(e.touches[0], e.touches[1]);
+      touchState.initialZoom = state.zoom;
+    }
+  }, { passive: true });
+
+  container.addEventListener("touchmove", (e) => {
+    if (touchState.isPinching && e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches[0], e.touches[1]);
+      const scale = distance / touchState.initialDistance;
+      state.zoom = Math.max(0.1, Math.min(3, touchState.initialZoom * scale));
+      applyTransform();
+      if (state.zoom > 1.2) hideActionBar(); else showActionBar();
+    } else if (touchState.isPanning && e.touches.length === 1) {
+      state.panX = touchState.initialPanX + (e.touches[0].clientX - touchState.startX);
+      state.panY = touchState.initialPanY + (e.touches[0].clientY - touchState.startY);
+      applyTransform();
+    }
+  }, { passive: true });
+
+  container.addEventListener("touchend", () => {
+    touchState.isPanning = false;
+    touchState.isPinching = false;
+  });
+
+  container.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    state.zoom = Math.max(0.1, Math.min(3, state.zoom * delta));
+    applyTransform();
+    if (state.zoom > 1.2) hideActionBar(); else showActionBar();
+  }, { passive: false });
+
+  let isMouseDown = false;
+  let mouseStartX, mouseStartY, mouseInitialPanX, mouseInitialPanY;
+
+  container.addEventListener("mousedown", (e) => {
+    if (e.target.closest(".tree-node")) return;
+    isMouseDown = true;
+    mouseStartX = e.clientX;
+    mouseStartY = e.clientY;
+    mouseInitialPanX = state.panX;
+    mouseInitialPanY = state.panY;
+    container.style.cursor = "grabbing";
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isMouseDown) return;
+    state.panX = mouseInitialPanX + (e.clientX - mouseStartX);
+    state.panY = mouseInitialPanY + (e.clientY - mouseStartY);
+    applyTransform();
+  });
+
+  window.addEventListener("mouseup", () => {
+    isMouseDown = false;
+    container.style.cursor = "";
+  });
+
+  container.addEventListener("dblclick", (e) => {
+    if (e.target.closest(".tree-node")) return;
+    resetZoom();
+  });
+}
+
+function applyTransform() {
+  const canvas = document.getElementById("treeCanvas");
+  if (!canvas) return;
+
+  if (state._rafPending) return;
+  state._rafPending = true;
+
+  requestAnimationFrame(() => {
+    canvas.style.transform = `translate3d(${state.panX}px, ${state.panY}px, 0) scale(${state.zoom})`;
+    state._rafPending = false;
+  });
+}
+
+function resetZoom() {
+  state.zoom = 1;
+  state.panX = 0;
+  state.panY = 0;
+  applyTransform();
+  showActionBar();
+}
+
+function getTouchDistance(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+
+// ===== 37. إخفاء/إظهار الشريط =====
+function hideActionBar() {
+  const header = document.getElementById("appHeader");
+  const actionBar = document.getElementById("actionBar");
+  const fab = document.getElementById("fabMenu");
+  if (header) header.classList.add("hide");
+  if (actionBar) actionBar.classList.add("hide");
+  if (fab) show(fab);
+}
+
+function showActionBar() {
+  const header = document.getElementById("appHeader");
+  const actionBar = document.getElementById("actionBar");
+  const fab = document.getElementById("fabMenu");
+  if (header) header.classList.remove("hide");
+  if (actionBar) actionBar.classList.remove("hide");
+  if (fab) hide(fab);
+}
+
+console.log("✅ الجزء 4 محمّل");
+
+/* ============================================
+   الجزء 5: البطاقة السفلية + القائمة الدائرية + الإضافة السريعة + القرابة
+   ============================================ */
+
+// ===== 38. البطاقة السفلية =====
+function openPersonCard(personId) {
+  if (state.relationMode) {
+    handleRelationClick(personId);
+    return;
+  }
+
+  const person = getPersonById(personId);
+  if (!person) return;
+
+  state.selectedPersonId = personId;
+  focusOnPerson(personId);
+
+  const body = document.getElementById("bottomSheetBody");
+  if (!body) return;
+
+  const father = person.fatherId ? getPersonById(person.fatherId) : null;
+  const mother = person.motherId ? getPersonById(person.motherId) : null;
+  const children = getChildren(personId);
+  const spouses = getSpouses(personId);
+
+  let relationBadge = "";
+  if (person.relationType === "adopted") relationBadge = " 🟡 تبنّي";
+  if (person.relationType === "fostered") relationBadge = " 🔵 كفالة";
+
+  const statusBadge = person.isAlive === "deceased" ? "⚫ متوفى" : "🟢 حي";
+
+  body.innerHTML = `
+    <div class="person-card">
+      <div class="person-card-header">
+        <div class="person-avatar">${getInitials(person.name)}</div>
+        <div class="person-info">
+          <div class="person-name">${escapeHtml(person.name)}${relationBadge}</div>
+          <div class="person-meta">
+            ${person.gender === "female" ? "👩 أنثى" : "👨 ذكر"}
+            ${person.birthYear ? " • 🎂 " + person.birthYear : ""}
+            • ${statusBadge}
+            ${person.deathYear ? " (توفي " + person.deathYear + ")" : ""}
+          </div>
+        </div>
+      </div>
+
+      <div class="person-details">
+        <div class="detail-row">
+          <span class="detail-label">👨 الأب:</span>
+          <span>${father ? escapeHtml(father.name) : "غير معروف"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">👩 الأم:</span>
+          <span>${mother ? escapeHtml(mother.name) : "غير معروفة"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💍 الأزواج:</span>
+          <span>${spouses.length > 0 ? spouses.map(s => escapeHtml(s.name)).join("، ") : "لا يوجد"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">👶 الأبناء:</span>
+          <span>${children.length > 0 ? children.length + " فرد" : "لا يوجد"}</span>
+        </div>
+        ${person.notes ? `<div class="detail-row"><span class="detail-label">📝 ملاحظات:</span><span>${escapeHtml(person.notes)}</span></div>` : ""}
+      </div>
+
+      ${canEdit() ? `
+        <div class="detail-actions">
+          <button class="btn-secondary" id="cardEditBtn">✏️ تعديل</button>
+          <button class="btn-secondary" id="cardRelationBtn">➕ إضافة علاقة</button>
+          ${isOwner() ? `<button class="btn-secondary" id="cardDeleteBtn">🗑️ حذف</button>` : ""}
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  const editBtn = document.getElementById("cardEditBtn");
+  const relationBtn = document.getElementById("cardRelationBtn");
+  const deleteBtn = document.getElementById("cardDeleteBtn");
+
+  if (editBtn) editBtn.addEventListener("click", () => {
+    hide("bottomSheet");
+    openPersonModal(person.id);
+  });
+
+  if (relationBtn) relationBtn.addEventListener("click", () => {
+    hide("bottomSheet");
+    openRelationModal(person.id);
+  });
+
+  if (deleteBtn) deleteBtn.addEventListener("click", async () => {
+    if (confirm(`هل أنت متأكد من حذف "${person.name}"؟`)) {
+      hide("bottomSheet");
+      await deletePerson(person.id);
+    }
+  });
+
+  show("bottomSheet");
+}
+
+
+// ===== 39. القائمة الدائرية =====
+function openPieMenu(personId) {
+  const person = getPersonById(personId);
+  if (!person) return;
+
+  closePieMenu();
+
+  const node = document.querySelector(`.tree-node[data-person-id="${personId}"]`);
+  if (!node) return;
+
+  const rect = node.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  const pieMenu = document.createElement("div");
+  pieMenu.className = "pie-menu";
+  pieMenu.id = "pieMenu";
+
+  const overlay = document.createElement("div");
+  overlay.className = "pie-overlay";
+  overlay.addEventListener("click", closePieMenu);
+  pieMenu.appendChild(overlay);
+
+  const container = document.createElement("div");
+  container.className = "pie-container";
+  container.style.left = centerX + "px";
+  container.style.top = centerY + "px";
+  pieMenu.appendChild(container);
+
+  const actions = [];
+
+  if (canEdit()) {
+    actions.push({ icon: "👨", label: "إضافة أب", action: () => quickAddParent(personId, "father") });
+    actions.push({ icon: "👩", label: "إضافة أم", action: () => quickAddParent(personId, "mother") });
+    actions.push({ icon: "👶", label: "إضافة ابن", action: () => quickAddChild(personId) });
+    actions.push({ icon: "💍", label: "زوج/زوجة", action: () => quickAddSpouse(personId) });
+    actions.push({ icon: "✏️", label: "تعديل", action: () => openPersonModal(personId) });
+  }
+
+  if (isOwner()) {
+    actions.push({ icon: "🗑️", label: "حذف", action: () => deletePersonFromCard(personId) });
+  }
+
+  if (actions.length === 0) {
+    showToast("👁️ أنت مشاهد فقط", "info");
+    return;
+  }
+
+  const count = actions.length;
+  const startAngle = -Math.PI;
+  const endAngle = 0;
+  const angleStep = count > 1 ? (endAngle - startAngle) / (count - 1) : 0;
+  const radius = 105;
+
+  actions.forEach((act, i) => {
+    const angle = startAngle + (angleStep * i);
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+
+    const btn = document.createElement("button");
+    btn.className = "pie-item";
+    btn.style.left = x + "px";
+    btn.style.top = y + "px";
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "pie-item-icon";
+    iconSpan.textContent = act.icon;
+    btn.appendChild(iconSpan);
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "pie-item-label";
+    labelSpan.textContent = act.label;
+    btn.appendChild(labelSpan);
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closePieMenu();
+      setTimeout(() => act.action(), 150);
+    });
+
+    container.appendChild(btn);
+  });
+
+  const centerBtn = document.createElement("button");
+  centerBtn.className = "pie-center";
+  centerBtn.textContent = "✕";
+  centerBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closePieMenu();
+  });
+  container.appendChild(centerBtn);
+
+  document.body.appendChild(pieMenu);
+  setTimeout(() => pieMenu.classList.add("active"), 10);
+}
+
+function closePieMenu() {
+  const existing = document.getElementById("pieMenu");
+  if (existing) {
+    existing.classList.remove("active");
+    setTimeout(() => existing.remove(), 250);
+  }
+}
+
+
+// ===== 40. الإضافة السريعة =====
+async function quickAddParent(personId, type) {
+  const name = prompt(`اسم ال${type === "father" ? "أب" : "أم"}:`);
+  if (!name || !name.trim()) return;
+
+  const newId = await addPerson({
+    name: name.trim(),
+    gender: type === "father" ? "male" : "female"
+  });
+
+  if (newId) {
+    const updates = {};
+    if (type === "father") updates.fatherId = newId;
+    else updates.motherId = newId;
+    await updatePerson(personId, updates);
+  }
+}
+
+async function quickAddChild(parentId) {
+  const name = prompt("اسم الابن/الابنة:");
+  if (!name || !name.trim()) return;
+
+  const parent = getPersonById(parentId);
+  if (!parent) return;
+
+  const gender = confirm("هل هو ذكر؟ (موافق = ذكر، إلغاء = أنثى)") ? "male" : "female";
+
+  await addPerson({
+    name: name.trim(),
+    gender: gender,
+    fatherId: parent.gender === "male" ? parentId : null,
+    motherId: parent.gender === "female" ? parentId : null
+  });
+}
+
+async function quickAddSpouse(personId) {
+  const name = prompt("اسم الزوج/الزوجة:");
+  if (!name || !name.trim()) return;
+
+  const person = getPersonById(personId);
+  if (!person) return;
+
+  const spouseGender = person.gender === "male" ? "female" : "male";
+  const spouseId = await addPerson({ name: name.trim(), gender: spouseGender });
+
+  if (spouseId) {
+    const husbandId = person.gender === "male" ? personId : spouseId;
+    const wifeId = person.gender === "female" ? personId : spouseId;
+    await addUnion(husbandId, wifeId);
+  }
+}
+
+async function deletePersonFromCard(personId) {
+  const person = getPersonById(personId);
+  if (!person) return;
+
+  if (confirm(`هل أنت متأكد من حذف "${person.name}"؟`)) {
+    await deletePerson(personId);
+  }
+}
+
+
+// ===== 41. مستوى الشخص في الشجرة =====
+function getParentIds(person) {
+  const ids = [];
+  if (person.fatherId) ids.push(person.fatherId);
+  if (person.motherId) ids.push(person.motherId);
+  state.parentChild.forEach(rel => {
+    if (rel.childId === person.id && !ids.includes(rel.parentId)) ids.push(rel.parentId);
+  });
+  return ids;
+}
+
+function getPersonLevel(personId) {
+  let level = 1;
+  let current = getPersonById(personId);
+  const seen = new Set();
+
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    const parentIds = getParentIds(current);
+    if (parentIds.length === 0) break;
+    const parent = getPersonById(parentIds[0]);
+    if (!parent) break;
+    level++;
+    current = parent;
+  }
+  return level;
+}
+
+
+// ===== 41.1 مسارات الأجداد =====
+// تُرجع Map: معرّف السلف -> أقصر مسار [الشخص, ..., السلف]
+function collectAncestorPaths(personId, maxDepth = 12) {
+  const result = new Map();
+  result.set(personId, [personId]);
+  const queue = [[personId]];
+
+  while (queue.length > 0) {
+    const path = queue.shift();
+    if (path.length > maxDepth) continue;
+    const person = getPersonById(path[path.length - 1]);
+    if (!person) continue;
+
+    getParentIds(person).forEach(pid => {
+      if (result.has(pid)) return;
+      const newPath = [...path, pid];
+      result.set(pid, newPath);
+      queue.push(newPath);
+    });
+  }
+  return result;
+}
+
+
+// ===== 41.2 وصف القرابة: ماذا يكون (أ) بالنسبة لـ (ب)؟ =====
+function describeRelation(a, b) {
+  const fem = a.gender === "female";
+  const g = (m, f) => (fem ? f : m);
+
+  if (getSpouses(a.id).some(s => s.id === b.id)) return g("زوج", "زوجة");
+
+  const pathsA = collectAncestorPaths(a.id);
+  const pathsB = collectAncestorPaths(b.id);
+
+  let best = null;
+  pathsA.forEach((pathA, ancestorId) => {
+    const pathB = pathsB.get(ancestorId);
+    if (!pathB) return;
+    const total = pathA.length + pathB.length;
+    if (!best || total < best.total) best = { pathA, pathB, total };
+  });
+
+  if (!best) return null;
+
+  const da = best.pathA.length - 1; // خطوات (أ) إلى السلف المشترك
+  const db = best.pathB.length - 1; // خطوات (ب) إلى السلف المشترك
+
+  // (أ) سلف لـ (ب)
+  if (da === 0) {
+    if (db === 1) return g("أب", "أم");
+    if (db === 2) return g("جد", "جدة");
+    return g("جد بعيد", "جدة بعيدة");
+  }
+
+  // (أ) من نسل (ب)
+  if (db === 0) {
+    if (da === 1) return g("ابن", "ابنة");
+    if (da === 2) return g("حفيد", "حفيدة");
+    return g("حفيد بعيد", "حفيدة بعيدة");
+  }
+
+  // إخوة
+  if (da === 1 && db === 1) {
+    const sameFather = a.fatherId && a.fatherId === b.fatherId;
+    const sameMother = a.motherId && a.motherId === b.motherId;
+    if (sameFather && sameMother) return g("أخ شقيق", "أخت شقيقة");
+    if (sameFather) return g("أخ لأب", "أخت لأب");
+    if (sameMother) return g("أخ لأم", "أخت لأم");
+    return g("أخ", "أخت");
+  }
+
+  // (أ) أخو/أخت والد (ب) أو والدته
+  if (da === 1 && db === 2) {
+    const parentOfB = getPersonById(best.pathB[1]);
+    const paternal = !parentOfB || parentOfB.gender !== "female";
+    return paternal ? g("عم", "عمة") : g("خال", "خالة");
+  }
+
+  // (أ) ابن/ابنة أخ أو أخت (ب)
+  if (da === 2 && db === 1) {
+    const parentOfA = getPersonById(best.pathA[1]);
+    const viaMale = !parentOfA || parentOfA.gender !== "female";
+    return viaMale ? g("ابن أخ", "ابنة أخ") : g("ابن أخت", "ابنة أخت");
+  }
+
+  // أبناء العمومة والخؤولة
+  if (da === 2 && db === 2) {
+    const parentOfA = getPersonById(best.pathA[1]);
+    const parentOfB = getPersonById(best.pathB[1]);
+    const bSideMale = !parentOfB || parentOfB.gender !== "female";
+    const aParentMale = !parentOfA || parentOfA.gender !== "female";
+    if (bSideMale) return aParentMale ? g("ابن عم", "ابنة عم") : g("ابن عمة", "ابنة عمة");
+    return aParentMale ? g("ابن خال", "ابنة خال") : g("ابن خالة", "ابنة خالة");
+  }
+
+  return g("قريب", "قريبة");
+}
+
+
+let relationState = {
+  firstPerson: null,
+  secondPerson: null
+};
+
+function calculateRelationFlow() {
+  relationState.firstPerson = null;
+  relationState.secondPerson = null;
+
+  showToast("👆 اختر الشخص الأول", "info");
+  state.selectedPersonId = null;
+  state.relationMode = true;
+
+  renderTree();
+}
+
+function handleRelationClick(personId) {
+  if (!state.relationMode) return false;
+
+  if (!relationState.firstPerson) {
+    relationState.firstPerson = personId;
+    const first = getPersonById(personId);
+    if (first) showToast(`✅ الأول: ${first.name}`, "info");
+    return true;
+  }
+
+  if (relationState.firstPerson === personId) {
+    showToast("⚠️ اختر شخصاً آخر", "warning");
+    return true;
+  }
+
+  relationState.secondPerson = personId;
+  const p1 = getPersonById(relationState.firstPerson);
+  const p2 = getPersonById(relationState.secondPerson);
+  if (!p1 || !p2) return false;
+
+  const relation = describeRelation(p1, p2);
+  const pronoun = p1.gender === "female" ? "هي" : "هو";
+  const relationText = relation
+    ? `${p1.name} ${pronoun} ${relation} ${p2.name}`
+    : `لا توجد صلة قرابة مسجلة بين ${p1.name} و ${p2.name}`;
+
+  const modal = document.getElementById("relationResultModal");
+  const el1 = document.getElementById("relationPerson1");
+  const el2 = document.getElementById("relationPerson2");
+  const elText = document.getElementById("relationText");
+
+  if (el1) el1.textContent = p1.name;
+  if (el2) el2.textContent = p2.name;
+  if (elText) elText.textContent = relationText;
+  if (modal) modal.style.display = "flex";
+
+  const btnClose = document.getElementById("btnCloseRelationResult");
+  if (btnClose) {
+    btnClose.onclick = function () { modal.style.display = "none"; };
+  }
+
+  state.relationMode = false;
+  state.selectedPersonId = null;
+  relationState.firstPerson = null;
+  relationState.secondPerson = null;
+  renderTree();
+
+  return true;
+}
+
+
+// ===== 41.3 التركيز على شخص =====
+function focusOnPerson(personId) {
+  const node = document.querySelector(`.tree-node[data-person-id="${personId}"]`);
+  if (!node) return;
+
+  const container = document.getElementById("treeContainer");
+  if (!container) return;
+
+  const containerRect = container.getBoundingClientRect();
+
+  const targetZoom = 1.5;
+
+  const nodeCenterX = node.offsetLeft + node.offsetWidth / 2;
+  const nodeCenterY = node.offsetTop + node.offsetHeight / 2;
+
+  const containerCenterX = containerRect.width / 2;
+  const containerCenterY = containerRect.height / 2;
+
+  state.zoom = targetZoom;
+  state.panX = containerCenterX - nodeCenterX * targetZoom;
+  state.panY = containerCenterY - nodeCenterY * targetZoom;
+
+  applyTransform();
+}
+
+
+// ===== 42. PIN =====
+function showPinModal(description, callback) {
+  const descEl = document.getElementById("pinDescription");
+  if (descEl) descEl.textContent = description;
+
+  const input = document.getElementById("inputPin");
+  if (input) input.value = "";
+
+  show("pinModal");
+
+  const confirmBtn = document.getElementById("btnConfirmPin");
+  const cancelBtn = document.getElementById("btnCancelPin");
+
+  const newConfirm = confirmBtn.cloneNode(true);
+  const newCancel = cancelBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+  cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+  newConfirm.addEventListener("click", () => {
+    const pin = input.value.trim();
+    if (pin.length < 4) {
+      showToast("❌ PIN قصير", "error");
+      return;
+    }
+    callback(pin);
+  });
+
+  newCancel.addEventListener("click", () => hide("pinModal"));
+}
+
+function setPin() {
+  showPinModal("أدخل PIN جديد", (pin) => {
+    storage.set(STORAGE_KEYS.PIN, pin);
+    state.pin = pin;
+    hide("pinModal");
+    showToast("✅ تم تعيين PIN", "success");
+    updatePinButtons();
+  });
+}
+
+function removePin() {
+  if (confirm("هل تريد إزالة PIN؟")) {
+    storage.remove(STORAGE_KEYS.PIN);
+    state.pin = null;
+    showToast("✅ تم الإزالة", "success");
+    updatePinButtons();
+  }
+}
+
+function updatePinButtons() {
+  const btnSet = document.getElementById("btnSetPin");
+  const btnRemove = document.getElementById("btnRemovePin");
+
+  if (state.pin) {
+    if (btnSet) btnSet.classList.add("hidden");
+    if (btnRemove) btnRemove.classList.remove("hidden");
+  } else {
+    if (btnSet) btnSet.classList.remove("hidden");
+    if (btnRemove) btnRemove.classList.add("hidden");
+  }
+}
+
+console.log("✅ الجزء 5 محمّل");
+
+/* ============================================
+   الجزء 6 (الأخير): النوافذ + الإعدادات + ربط الأحداث
+   ============================================ */
+
+// ===== 43. نافذة إضافة/تعديل فرد =====
+function openPersonModal(personId = null) {
+  state.editingPersonId = personId;
+
+  const titleEl = document.getElementById("personModalTitle");
+  const nameInput = document.getElementById("inputPersonName");
+  const titleInput = document.getElementById("inputPersonTitle");
+  const genderInput = document.getElementById("selectGender");
+  const fatherInput = document.getElementById("selectFather");
+  const motherInput = document.getElementById("selectMother");
+  const birthInput = document.getElementById("inputBirthYear");
+  const relationInput = document.getElementById("selectRelationType");
+  const notesInput = document.getElementById("inputNotes");
+  const isAliveInput = document.getElementById("selectIsAlive");
+  const deathYearInput = document.getElementById("inputDeathYear");
+  const deathGroup = document.getElementById("deathYearGroup");
+
+  fillParentSelects();
+
+  if (personId) {
+    const person = getPersonById(personId);
+    if (!person) return;
+
+    titleEl.textContent = "تعديل فرد";
+    nameInput.value = person.name || "";
+    if (titleInput) titleInput.value = person.title || "";
+    genderInput.value = person.gender || "male";
+    fatherInput.value = person.fatherId || "";
+    motherInput.value = person.motherId || "";
+    birthInput.value = person.birthYear || "";
+    relationInput.value = person.relationType || "biological";
+    notesInput.value = person.notes || "";
+    if (isAliveInput) isAliveInput.value = person.isAlive || "alive";
+    if (person.isAlive === "deceased") {
+      if (deathGroup) deathGroup.classList.remove("hidden");
+      if (deathYearInput) deathYearInput.value = person.deathYear || "";
+    } else {
+      if (deathGroup) deathGroup.classList.add("hidden");
+      if (deathYearInput) deathYearInput.value = "";
+    }
+  } else {
+    titleEl.textContent = "إضافة فرد";
+    nameInput.value = "";
+    if (titleInput) titleInput.value = "";
+    genderInput.value = "male";
+    fatherInput.value = "";
+    motherInput.value = "";
+    birthInput.value = "";
+    relationInput.value = "biological";
+    notesInput.value = "";
+    if (isAliveInput) isAliveInput.value = "alive";
+    if (deathGroup) deathGroup.classList.add("hidden");
+    if (deathYearInput) deathYearInput.value = "";
+  }
+
+  show("personModal");
+  setTimeout(() => nameInput.focus(), 300);
+}
+
+
+function fillParentSelects() {
+  const fatherSelect = document.getElementById("selectFather");
+  const motherSelect = document.getElementById("selectMother");
+  if (!fatherSelect || !motherSelect) return;
+
+  const males = sortPersonsByName(state.persons.filter(p => p.gender === "male" && p.id !== state.editingPersonId));
+  const females = sortPersonsByName(state.persons.filter(p => p.gender === "female" && p.id !== state.editingPersonId));
+
+  fatherSelect.innerHTML = '<option value="">— لا يوجد —</option>' +
+    males.map(p => {
+      const fatherName = p.fatherId ? getPersonName(p.fatherId) : null;
+      const label = fatherName ? `${escapeHtml(p.name)} (${escapeHtml(fatherName)})` : escapeHtml(p.name);
+      return `<option value="${p.id}">${label}</option>`;
+    }).join("");
+
+  motherSelect.innerHTML = '<option value="">— لا يوجد —</option>' +
+    females.map(p => {
+      const fatherName = p.fatherId ? getPersonName(p.fatherId) : null;
+      const label = fatherName ? `${escapeHtml(p.name)} (${escapeHtml(fatherName)})` : escapeHtml(p.name);
+      return `<option value="${p.id}">${label}</option>`;
+    }).join("");
+}
+
+
+async function savePersonFromModal() {
+  const nameInput = document.getElementById("inputPersonName");
+  const name = nameInput ? nameInput.value.trim() : "";
+
+  if (!name) {
+    showToast("❌ الاسم مطلوب", "error");
+    nameInput.focus();
+    return;
+  }
+
+  const isAliveEl = document.getElementById("selectIsAlive");
+  const deathYearEl = document.getElementById("inputDeathYear");
+
+  const data = {
+    name: name,
+    gender: document.getElementById("selectGender").value,
+    title: document.getElementById("inputPersonTitle") ? document.getElementById("inputPersonTitle").value.trim() : "",
+    fatherId: document.getElementById("selectFather").value || null,
+    motherId: document.getElementById("selectMother").value || null,
+    birthYear: parseInt(document.getElementById("inputBirthYear").value) || null,
+    relationType: document.getElementById("selectRelationType").value,
+    notes: document.getElementById("inputNotes").value.trim(),
+    isAlive: isAliveEl ? isAliveEl.value : "alive",
+    deathYear: (isAliveEl && isAliveEl.value === "deceased" && deathYearEl)
+      ? (parseInt(deathYearEl.value) || null)
+      : null
+  };
+
+  try {
+    if (state.editingPersonId) {
+      await updatePerson(state.editingPersonId, data);
+    } else {
+      const newId = await addPerson(data);
+      if (newId) {
+        if (data.fatherId) await addParentChildRelation(data.fatherId, newId, data.relationType);
+        if (data.motherId) await addParentChildRelation(data.motherId, newId, data.relationType);
+      }
+    }
+  } catch (error) {
+    console.error("خطأ:", error);
+  } finally {
+    hide("personModal");
+    state.editingPersonId = null;
+  }
+}
+
+
+// ===== 44. نافذة إضافة علاقة =====
+function openRelationModal(personId) {
+  state.relationFromPersonId = personId;
+  const person = getPersonById(personId);
+  if (!person) return;
+
+  const body = document.getElementById("relationModalBody");
+  const title = document.getElementById("relationModalTitle");
+  title.textContent = `إضافة علاقة لـ ${person.name}`;
+
+  body.innerHTML = `
+    <div class="form-group">
+      <label>نوع العلاقة</label>
+      <select id="selectRelationKind">
+        <option value="spouse">💍 زوج/زوجة</option>
+        <option value="child">👶 ابن/ابنة</option>
+        <option value="parent">👨 أب/أم</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>الفرد المرتبط</label>
+      <select id="selectRelationTarget">
+        <option value="">— اختر —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>نوع العلاقة (للأبناء)</label>
+      <select id="selectRelationSubType">
+        <option value="biological">طبيعي</option>
+        <option value="adopted">تبنّي</option>
+        <option value="fostered">كفالة</option>
+      </select>
+    </div>
+    <div class="form-group" id="unionStatusGroup" style="display:none;">
+      <label>حالة الزواج</label>
+      <select id="selectUnionStatus">
+        <option value="married">متزوج</option>
+        <option value="divorced">مطلق</option>
+        <option value="widowed">متوفى</option>
+      </select>
+    </div>
+  `;
+
+  const kindSelect = document.getElementById("selectRelationKind");
+  const statusGroup = document.getElementById("unionStatusGroup");
+
+  kindSelect.addEventListener("change", () => {
+    const kind = kindSelect.value;
+    statusGroup.style.display = kind === "spouse" ? "block" : "none";
+    fillRelationTargets(kind);
+  });
+
+  fillRelationTargets("spouse");
+  show("relationModal");
+}
+
+
+function fillRelationTargets(kind) {
+  const targetSelect = document.getElementById("selectRelationTarget");
+  if (!targetSelect) return;
+
+  let candidates = [];
+  const person = getPersonById(state.relationFromPersonId);
+  if (!person) return;
+
+  if (kind === "spouse") {
+    candidates = state.persons.filter(p =>
+      p.id !== state.relationFromPersonId &&
+      p.gender !== person.gender &&
+      !getSpouses(state.relationFromPersonId).some(s => s.id === p.id)
+    );
+  } else if (kind === "child") {
+    candidates = state.persons.filter(p =>
+      p.id !== state.relationFromPersonId &&
+      p.fatherId !== state.relationFromPersonId &&
+      p.motherId !== state.relationFromPersonId
+    );
+  } else if (kind === "parent") {
+    candidates = state.persons.filter(p =>
+      p.id !== state.relationFromPersonId &&
+      p.id !== person.fatherId &&
+      p.id !== person.motherId
+    );
+  }
+
+  candidates = sortPersonsByName(candidates);
+  targetSelect.innerHTML = '<option value="">— اختر —</option>' +
+    candidates.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${p.gender === "male" ? "ذكر" : "أنثى"})</option>`).join("");
+}
+
+
+async function saveRelationFromModal() {
+  const kind = document.getElementById("selectRelationKind").value;
+  const targetId = document.getElementById("selectRelationTarget").value;
+  const subType = document.getElementById("selectRelationSubType").value;
+  const unionStatus = document.getElementById("selectUnionStatus").value;
+
+  if (!targetId) {
+    showToast("❌ اختر الفرد", "error");
+    return;
+  }
+
+  const person = getPersonById(state.relationFromPersonId);
+  const target = getPersonById(targetId);
+  if (!person || !target) return;
+
+  let success = false;
+
+  if (kind === "spouse") {
+    const husbandId = person.gender === "male" ? person.id : target.id;
+    const wifeId = person.gender === "female" ? person.id : target.id;
+    success = await addUnion(husbandId, wifeId, unionStatus);
+  } else if (kind === "child") {
+    if (person.gender === "male") {
+      await updatePerson(targetId, { fatherId: person.id, relationType: subType });
+      success = await addParentChildRelation(person.id, targetId, subType);
+    } else {
+      await updatePerson(targetId, { motherId: person.id, relationType: subType });
+      success = await addParentChildRelation(person.id, targetId, subType);
+    }
+  } else if (kind === "parent") {
+    if (target.gender === "male") {
+      await updatePerson(person.id, { fatherId: target.id });
+    } else {
+      await updatePerson(person.id, { motherId: target.id });
+    }
+    success = await addParentChildRelation(target.id, person.id, subType);
+  }
+
+  if (success) {
+    hide("relationModal");
+    showToast("✅ تمت الإضافة", "success");
+  }
+}
+
+
+// ===== 45. الإعدادات =====
+function openSettings() {
+  updateSettingsUI();
+  updatePinButtons();
+  show("settingsModal");
+}
+
+async function saveSettings() {
+  if (!isOwner()) {
+    showToast("❌ حفظ الإعدادات للمالك فقط", "error");
+    return;
+  }
+
+  try {
+    const newName = document.getElementById("inputPlatformName").value.trim();
+    if (!newName) {
+      showToast("❌ اسم المنصة مطلوب", "error");
+      return;
+    }
+
+    const editorCodeInput = document.getElementById("editorCodeInput");
+    const viewerCodeInput = document.getElementById("viewerCodeInput");
+    const newEditorCode = editorCodeInput ? editorCodeInput.value.trim().toUpperCase() : "";
+    const newViewerCode = viewerCodeInput ? viewerCodeInput.value.trim().toUpperCase() : "";
+
+    if (newEditorCode && newViewerCode && newEditorCode === newViewerCode) {
+      showToast("❌ الكودان يجب أن يكونا مختلفين", "error");
+      return;
+    }
+
+    const updates = { name: newName };
+    if (newEditorCode) updates.editorCode = newEditorCode;
+    if (newViewerCode) updates.viewerCode = newViewerCode;
+
+    const metaRef = doc(db, COLLECTIONS.FAMILIES, state.familyId, COLLECTIONS.META, "info");
+    await setDoc(metaRef, updates, { merge: true });
+
+    const familyRef = doc(db, COLLECTIONS.FAMILIES, state.familyId);
+    await setDoc(familyRef, updates, { merge: true });
+
+    updatePlatformTitle(newName);
+    hide("settingsModal");
+    showToast("✅ تم الحفظ", "success");
+  } catch (error) {
+    console.error("خطأ:", error);
+    showToast("❌ فشل الحفظ", "error");
+  }
+}
+
+
+// ===== 46. الوضع الليلي والمضغوط =====
+function toggleTheme() {
+  state.isDark = !state.isDark;
+  if (state.isDark) document.body.classList.add("dark");
+  else document.body.classList.remove("dark");
+  storage.set(STORAGE_KEYS.THEME, state.isDark);
+  showToast(state.isDark ? "🌙 ليلي" : "☀️ نهاري", "info");
+}
+
+function toggleCompact() {
+  state.isCompact = !state.isCompact;
+  if (state.isCompact) document.body.classList.add("compact");
+  else document.body.classList.remove("compact");
+  storage.set(STORAGE_KEYS.COMPACT, state.isCompact);
+  showToast(state.isCompact ? "📐 مضغوط" : "🔍 عادي", "info");
+}
+
+
+// ===== 47. النسخ الاحتياطي =====
+async function exportJSON() {
+  try {
+    const data = {
+      meta: state.familyMeta,
+      persons: state.persons,
+      unions: state.unions,
+      parentChild: state.parentChild,
+      exportedAt: new Date().toISOString(),
+      version: "1.0.0"
+    };
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `family-tree-backup-${Date.now()}.json`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+    showToast("✅ تم التصدير", "success");
+  } catch (error) {
+    showToast("❌ فشل التصدير", "error");
+  }
+}
+
+async function commitInChunks(ops) {
+  const CHUNK = 400;
+  for (let i = 0; i < ops.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    ops.slice(i, i + CHUNK).forEach(op => {
+      if (op.type === "delete") batch.delete(op.ref);
+      else batch.set(op.ref, op.data);
+    });
+    await batch.commit();
+  }
+}
+
+async function importJSON(file) {
+  if (!isOwner()) {
+    showToast("❌ للمالك فقط", "error");
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.persons || !Array.isArray(data.persons)) {
+      showToast("❌ ملف غير صالح", "error");
+      return;
+    }
+
+    if (!confirm(`سيتم استيراد ${data.persons.length} فرد وحذف البيانات الحالية. متابعة؟`)) return;
+
+    const col = (name, id) => doc(db, COLLECTIONS.FAMILIES, state.familyId, name, id);
+    const clean = (item) => {
+      const { id, createdAt, updatedAt, ...rest } = item;
+      return rest;
+    };
+
+    const delOps = [];
+    state.persons.forEach(p => delOps.push({ type: "delete", ref: col(COLLECTIONS.PERSONS, p.id) }));
+    state.unions.forEach(u => delOps.push({ type: "delete", ref: col(COLLECTIONS.UNIONS, u.id) }));
+    state.parentChild.forEach(r => delOps.push({ type: "delete", ref: col(COLLECTIONS.PARENT_CHILD, r.id) }));
+    await commitInChunks(delOps);
+
+    const setOps = [];
+    data.persons.filter(p => p && p.id).forEach(p => {
+      setOps.push({ type: "set", ref: col(COLLECTIONS.PERSONS, p.id), data: { ...clean(p), updatedAt: serverTimestamp() } });
+    });
+    (data.unions || []).filter(u => u && u.id).forEach(u => {
+      setOps.push({ type: "set", ref: col(COLLECTIONS.UNIONS, u.id), data: { ...clean(u), createdAt: serverTimestamp() } });
+    });
+    (data.parentChild || []).filter(r => r && r.id).forEach(r => {
+      setOps.push({ type: "set", ref: col(COLLECTIONS.PARENT_CHILD, r.id), data: { ...clean(r), createdAt: serverTimestamp() } });
+    });
+    await commitInChunks(setOps);
+
+    showToast("✅ تم الاستيراد", "success");
+  } catch (error) {
+    console.error("خطأ في الاستيراد:", error);
+    showToast("❌ فشل الاستيراد", "error");
+  }
+}
+
+
+// ===== 48. شريط الأزرار =====
+function handleActionBarClick(action) {
+  switch (action) {
+    case "menu": updateDrawerUserInfo(); show("sideDrawer"); break;
+case "tree": focusOnRoot(); switchActiveAction("tree"); break;    case "persons": openPersonsList(); switchActiveAction("persons"); break;
+    case "add":
+      if (!canEdit()) { showToast("❌ ليس لديك صلاحية", "error"); return; }
+      openPersonModal(null);
+      switchActiveAction("add");
+      break;
+    case "pie": showToast("💡 اضغط مطولاً على أي فرد", "info"); break;
+    case "settings": openSettings(); switchActiveAction("settings"); break;
+    case "theme": toggleTheme(); break;
+    case "relation": calculateRelationFlow(); break;
+      case "navigate": openNavigation(); break;
+      case "zoomOut": state.zoom = 0.15; applyTransform(); showToast("🔍 تصغير", "info"); break;
+  }
+}
+
+function switchActiveAction(actionName) {
+  document.querySelectorAll(".action-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.action === actionName);
+  });
+}
+
+
+function openPersonsList() {
+  const sorted = sortPersonsByName(state.persons);
+  const body = document.getElementById("bottomSheetBody");
+  if (!body) return;
+
+  if (sorted.length === 0) {
+    body.innerHTML = `
+      <div class="person-card">
+        <p style="text-align:center; padding:20px;">لا يوجد أفراد</p>
+        ${canEdit() ? `<button class="btn-primary" id="emptyAddBtn">➕ إضافة</button>` : ""}
+      </div>
+    `;
+    const btn = document.getElementById("emptyAddBtn");
+    if (btn) btn.addEventListener("click", () => { hide("bottomSheet"); openPersonModal(null); });
+    show("bottomSheet");
+    return;
+  }
+
+  body.innerHTML = `
+    <div class="person-card">
+      <h3 style="margin-bottom:15px;">👥 الأفراد (${sorted.length})</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto;" id="personsListContainer"></div>
+    </div>
+  `;
+
+  const container = document.getElementById("personsListContainer");
+  sorted.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "drawer-item";
+    btn.style.width = "100%";
+    btn.innerHTML = `<span class="drawer-icon">${p.gender === "female" ? "👩" : "👨"}</span><span>${escapeHtml(p.name)}</span>`;
+    btn.addEventListener("click", () => { hide("bottomSheet"); setTimeout(() => openPersonCard(p.id), 200); });
+    container.appendChild(btn);
+  });
+
+  show("bottomSheet");
+}
+
+
+// ===== 49. القائمة الجانبية =====
+function handleDrawerNav(nav) {
+  setTimeout(() => updateDrawerUserInfo(), 100);
+  hide("sideDrawer");
+  setTimeout(() => {
+    switch (nav) {
+      case "tree": focusOnRoot(); switchActiveAction("tree"); break;
+      case "persons": openPersonsList(); break;
+      case "add":
+        if (!canEdit()) { showToast("❌ ليس لديك صلاحية", "error"); return; }
+        openPersonModal(null);
+        break;
+      case "backup": openSettings(); break;
+      case "pie": showToast("💡 اضغط مطولاً على أي فرد", "info"); break;
+      case "history": loadHistory(); show("historyModal"); break;
+      case "settings": openSettings(); break;
+      case "logout":
+        if (confirm("هل تريد تسجيل الخروج؟")) handleLogout();
+        break;
+    }
+  }, 200);
+}
+
+
+// ===== 50. ربط الأحداث =====
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🔗 ربط الأحداث...");
+
+  const btnGoogle = document.getElementById("btnGoogleLogin");
+  if (btnGoogle) btnGoogle.addEventListener("click", handleGoogleLogin);
+
+  const btnJoin = document.getElementById("btnJoinByCode");
+  if (btnJoin) btnJoin.addEventListener("click", openJoinModal);
+
+  const btnConfirmJoin = document.getElementById("btnConfirmJoin");
+  if (btnConfirmJoin) btnConfirmJoin.addEventListener("click", confirmJoin);
+
+  const btnCancelJoin = document.getElementById("btnCancelJoin");
+  if (btnCancelJoin) btnCancelJoin.addEventListener("click", closeJoinModal);
+
+  const btnCloseJoin = document.getElementById("btnCloseJoinModal");
+  if (btnCloseJoin) btnCloseJoin.addEventListener("click", closeJoinModal);
+
+  document.querySelectorAll(".action-btn").forEach(btn => {
+    btn.addEventListener("click", () => handleActionBarClick(btn.dataset.action));
+  });
+
+  document.querySelectorAll(".drawer-item").forEach(item => {
+    item.addEventListener("click", () => handleDrawerNav(item.dataset.nav));
+  });
+
+  const fab = document.getElementById("fabMenu");
+  if (fab) fab.addEventListener("click", () => showActionBar());
+
+  const btnSaveSettings = document.getElementById("btnSaveSettings");
+  if (btnSaveSettings) btnSaveSettings.addEventListener("click", saveSettings);
+
+  const btnSetPin = document.getElementById("btnSetPin");
+  if (btnSetPin) btnSetPin.addEventListener("click", setPin);
+
+  const btnRemovePin = document.getElementById("btnRemovePin");
+  if (btnRemovePin) btnRemovePin.addEventListener("click", removePin);
+
+  const btnToggleTheme = document.getElementById("btnToggleTheme");
+  if (btnToggleTheme) btnToggleTheme.addEventListener("click", toggleTheme);
+
+  const btnToggleCompact = document.getElementById("btnToggleCompact");
+  if (btnToggleCompact) btnToggleCompact.addEventListener("click", toggleCompact);
+
+  const btnExport = document.getElementById("btnExportJSON");
+  if (btnExport) btnExport.addEventListener("click", exportJSON);
+
+  const btnImport = document.getElementById("btnImportJSON");
+  const inputImport = document.getElementById("inputImportJSON");
+  if (btnImport && inputImport) {
+    btnImport.addEventListener("click", () => inputImport.click());
+    inputImport.addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      if (f) importJSON(f).finally(() => { e.target.value = ""; });
+    });
+  }
+
+  const btnSavePerson = document.getElementById("btnSavePerson");
+  if (btnSavePerson) btnSavePerson.addEventListener("click", savePersonFromModal);
+
+  const btnCancelPerson = document.getElementById("btnCancelPerson");
+  if (btnCancelPerson) btnCancelPerson.addEventListener("click", () => {
+    hide("personModal");
+    state.editingPersonId = null;
+  });
+
+  const btnSaveRelation = document.getElementById("btnSaveRelation");
+  if (btnSaveRelation) btnSaveRelation.addEventListener("click", saveRelationFromModal);
+
+  const btnCancelRelation = document.getElementById("btnCancelRelation");
+  if (btnCancelRelation) btnCancelRelation.addEventListener("click", () => hide("relationModal"));
+
+  const btnAddFirst = document.getElementById("btnAddFirst");
+  if (btnAddFirst) btnAddFirst.addEventListener("click", () => openPersonModal(null));
+
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.id === "selectIsAlive") {
+      const deathGroup = document.getElementById("deathYearGroup");
+      if (deathGroup) {
+        if (e.target.value === "deceased") deathGroup.classList.remove("hidden");
+        else deathGroup.classList.add("hidden");
+      }
+    }
+  });
+
+  const closeMap = {
+    "btnCloseSettings": "settingsModal",
+    "btnClosePersonModal": "personModal",
+    "btnCloseRelationModal": "relationModal",
+    "btnClosePinModal": "pinModal",
+    "btnCloseHistory": "historyModal",
+    "btnCloseDrawer": "sideDrawer",
+"btnCloseNavigation": "navigationModal"
+  };
+  Object.entries(closeMap).forEach(([btnId, modalId]) => {
+    const btn = document.getElementById(btnId);
+    if (btn) btn.addEventListener("click", () => hide(modalId));
+  });
+
+  document.querySelectorAll(".modal-overlay").forEach(overlay => {
+    overlay.addEventListener("click", (e) => {
+      const modal = e.target.closest(".modal");
+      if (modal) hide(modal.id);
+    });
+  });
+
+  document.querySelectorAll(".bottom-sheet-overlay, .drawer-overlay").forEach(overlay => {
+    overlay.addEventListener("click", (e) => {
+      const parent = e.target.closest(".bottom-sheet, .side-drawer");
+      if (parent) hide(parent.id);
+    });
+  });
+
+  const btnCopyEditor = document.getElementById("btnCopyEditorCode");
+  if (btnCopyEditor) {
+    btnCopyEditor.addEventListener("click", () => {
+      const code = document.getElementById("editorCodeInput").value;
+      if (code) navigator.clipboard.writeText(code).then(() => showToast("✅ تم النسخ", "success"));
+    });
+  }
+
+  const btnCopyViewer = document.getElementById("btnCopyViewerCode");
+  if (btnCopyViewer) {
+    btnCopyViewer.addEventListener("click", () => {
+      const code = document.getElementById("viewerCodeInput").value;
+      if (code) navigator.clipboard.writeText(code).then(() => showToast("✅ تم النسخ", "success"));
+    });
+  }
+
+  setTimeout(() => initZoomPan(), 500);
+
+  console.log("✅ تم ربط الأحداث");
+});
+
+
+// ===== 51. معلومات المستخدم في القائمة =====
+function updateDrawerUserInfo() {
+  const avatarEl = document.getElementById("drawerUserAvatar");
+  const nameEl = document.getElementById("drawerUserName");
+  const roleEl = document.getElementById("drawerUserRole");
+
+  if (!state.user) return;
+
+  const displayName = state.user.displayName || state.user.email || "مستخدم";
+  const initials = displayName.charAt(0).toUpperCase();
+
+  if (avatarEl) avatarEl.textContent = initials;
+  if (nameEl) nameEl.textContent = displayName;
+
+  if (roleEl) {
+    const roleNames = { "owner": "👑 مالك", "editor": "✏️ محرر", "viewer": "👁️ مشاهد" };
+    roleEl.textContent = roleNames[state.role] || "—";
+  }
+}
+
+
+// ===== 51.1 حالة الاتصال =====
+function updateConnectionStatus() {
+  const light = document.getElementById("connection-status");
+  const syncEl = document.getElementById("syncStatus");
+  const online = navigator.onLine;
+
+  if (light) {
+    light.style.backgroundColor = online ? "#4CAF50" : "#f44336";
+    light.title = online ? "متصل" : "لا يوجد إنترنت";
+  }
+  if (syncEl) syncEl.textContent = "حالة المزامنة: " + (online ? "متصل" : "غير متصل");
+}
+
+window.addEventListener("online", updateConnectionStatus);
+window.addEventListener("offline", updateConnectionStatus);
+updateConnectionStatus();
+
+
+  // 🎯 التمركز على الجد الأكبر
+function focusOnRoot() {
+  var roots = findRootPersons();
+  if (!roots || roots.length === 0) {
+    showToast("⚠️ لا يوجد جد أكبر", "warning");
+    return;
+  }
+  var root = roots[0];
+  var node = document.querySelector('.tree-node[data-person-id="' + root.id + '"]');
+  var container = document.getElementById("treeContainer");
+  if (!node || !container) return;
+  var rect = container.getBoundingClientRect();
+  state.zoom = 1;
+  state.panX = rect.width / 2 - (node.offsetLeft + node.offsetWidth / 2);
+  state.panY = 80 - node.offsetTop;
+  applyTransform();
+  showToast("🌳 الجد الأكبر: " + root.name, "success");
+}
+
+  // 📍 نافذة التنقل
+function openNavigation() {
+  var modal = document.getElementById("navigationModal");
+  if (!modal) return;
+  var list = document.getElementById("navList");
+  var searchInput = document.getElementById("navSearch");
+  searchInput.value = "";
+  
+  function renderList(filter) {
+    var query = (filter || "").toLowerCase().trim();
+    var sorted = state.persons.slice().sort(function(a, b) {
+      return (a.name || "").localeCompare(b.name || "", "ar");
+    });
+    var filtered = query
+      ? sorted.filter(function(p) {
+          return (p.name || "").toLowerCase().indexOf(query) !== -1;
+        })
+      : sorted;
+    
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">لا نتائج</div>';
+      return;
+    }
+    
+    list.innerHTML = filtered.map(function(p) {
+      var level = getPersonLevel(p.id);
+      var gender = p.gender === "female" ? "👩" : "👨";
+      return '<button class="nav-item" data-id="' + p.id + '" style="width:100%; padding:12px 14px; background:var(--bg); border:1px solid var(--border); border-radius:10px; text-align:right; display:flex; align-items:center; gap:10px; cursor:pointer; font-family:inherit; font-size:15px; color:var(--text); margin-bottom:6px;">' +
+        '<span style="font-size:20px;">' + gender + '</span>' +
+        '<div style="flex:1; min-width:0;">' +
+          '<div style="font-weight:700;">' + escapeHtml(p.name || "بدون اسم") + '</div>' +
+          '<div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">المستوى: ' + level + '</div>' +
+        '</div>' +
+        '<span style="color:var(--gold); font-size:18px;">›</span>' +
+      '</button>';
+    }).join("");
+    
+    list.querySelectorAll(".nav-item").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-id");
+        hide("navigationModal");
+        setTimeout(function() {
+          navigateToPerson(id);
+        }, 200);
+      });
+    });
+  }
+  
+  searchInput.oninput = function(e) {
+    renderList(e.target.value);
+  };
+  
+  renderList("");
+  show("navigationModal");
+  setTimeout(function() { searchInput.focus(); }, 300);
+}
+
+// 📍 التنقل إلى فرد محدد
+function navigateToPerson(personId) {
+  var node = document.querySelector('.tree-node[data-person-id="' + personId + '"]');
+  var container = document.getElementById("treeContainer");
+  if (!node || !container) {
+    showToast("⚠️ الفرد غير موجود في الشجرة", "warning");
+    return;
+  }
+  var rect = container.getBoundingClientRect();
+  state.zoom = 1.5;
+  state.panX = rect.width / 2 - (node.offsetLeft + node.offsetWidth / 2) * state.zoom;
+  state.panY = rect.height / 2 - (node.offsetTop + node.offsetHeight / 2) * state.zoom;
+  state.selectedPersonId = personId;
+  applyTransform();
+  renderTree();
+  var person = getPersonById(personId);
+  showToast("📍 " + (person ? person.name : ""), "success");
+}
+
+// ===== 52. تصدير للاستخدام العام =====
+window.FT = {
+  state, showToast, show, hide, storage,
+  generateId, generateInviteCode,
+  getPersonById, getPersonName, canEdit, isOwner,
+  ROLES, RELATION_TYPES, COLLECTIONS, STORAGE_KEYS,
+  openPieMenu, closePieMenu, openPersonCard,
+  openPersonModal, openRelationModal, openSettings, openPersonsList
+};
+
+console.log("✅✅✅ تم تحميل app.js بالكامل بنجاح! ✅✅✅");
+  // ===== 53. استعراض العائلات يدوياً =====
+async function openFamiliesBrowser() {
+  showToast("🔍 جارٍ البحث في كل العائلات...", "info", 5000);
+  try {
+    const familiesSnap = await getDocs(collection(db, COLLECTIONS.FAMILIES));
+    if (familiesSnap.empty) {
+      showToast("❌ لا توجد عائلات في Firebase", "error", 5000);
+      return;
+    }
+    const allFamilies = [];
+    for (const famDoc of familiesSnap.docs) {
+      const famData = famDoc.data();
+      let personsCount = 0;
+      try {
+        const personsSnap = await getDocs(collection(db, COLLECTIONS.FAMILIES, famDoc.id, COLLECTIONS.PERSONS));
+        personsCount = personsSnap.size;
+      } catch (e) {}
+      allFamilies.push({
+        id: famDoc.id,
+        name: famData.name || "بدون اسم",
+        editorCode: famData.editorCode || "—",
+        viewerCode: famData.viewerCode || "—",
+        personsCount: personsCount,
+        isMine: famData.ownerId === state.user.uid
+      });
+    }
+    allFamilies.sort((a, b) => {
+      if (a.isMine && !b.isMine) return -1;
+      if (!a.isMine && b.isMine) return 1;
+      return (b.personsCount || 0) - (a.personsCount || 0);
+    });
+
+    const browser = document.createElement("div");
+    browser.style.cssText = "position:fixed;inset:0;z-index:999999;background:linear-gradient(135deg,#0a3d2e,#062a1f);display:flex;flex-direction:column;align-items:center;padding:20px;direction:rtl;overflow-y:auto;";
+    
+    let html = '<div style="width:100%;max-width:500px;">';
+    html += '<div style="text-align:center;margin-bottom:20px;">';
+    html += '<h2 style="color:#d4af37;font-size:22px;font-weight:800;margin-bottom:8px;">📋 كل العائلات</h2>';
+    html += '<p style="color:rgba(255,255,255,0.7);font-size:13px;">' + allFamilies.length + ' عائلة • اختر واحدة</p>';
+    html += '<button id="closeFamiliesBrowser" style="margin-top:10px;padding:8px 20px;background:transparent;color:#d4af37;border:2px solid #d4af37;border-radius:8px;font-family:inherit;font-size:14px;cursor:pointer;">✕ إغلاق</button>';
+    html += '</div><div id="familiesListContainer" style="display:flex;flex-direction:column;gap:12px;"></div></div>';
+    browser.innerHTML = html;
+
+    const list = browser.querySelector("#familiesListContainer");
+    
+    allFamilies.forEach(function(fam) {
+      const btn = document.createElement("button");
+      const bg = fam.isMine ? "#ffffff" : "#e8e8e8";
+      const border = fam.isMine ? "#d4af37" : "#aaa";
+      btn.style.cssText = "width:100%;padding:16px 18px;background:" + bg + ";color:#0a3d2e;border:2px solid " + border + ";border-radius:14px;text-align:right;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,0.2);font-family:inherit;font-size:15px;";
+      
+      let content = '<div style="font-size:17px;font-weight:800;">' + (fam.isMine ? '👑 ' : '') + fam.name + '</div>';
+      content += '<div style="font-size:13px;color:#5a5a5a;">👥 ' + fam.personsCount + ' فرد' + (fam.isMine ? ' • أنت المالك' : '') + '</div>';
+      content += '<div style="font-size:11px;color:#8a8a8a;font-family:monospace;direction:ltr;text-align:left;">' + fam.id + '</div>';
+      content += '<div style="font-size:11px;color:#8a8a8a;">🔑 محرر: ' + fam.editorCode + ' | 👁️ مشاهد: ' + fam.viewerCode + '</div>';
+      btn.innerHTML = content;
+
+      btn.addEventListener("click", async function() {
+        const ok = confirm("هل تريد الدخول إلى:\n\n" + fam.name + "\n👥 " + fam.personsCount + " فرد\n\nسيتم تبديل العائلة الحالية.");
+        if (ok) {
+          storage.set(STORAGE_KEYS.FAMILY_ID, fam.id);
+          storage.set("userRole", fam.isMine ? ROLES.OWNER : ROLES.VIEWER);
+          browser.remove();
+          cleanupListeners();
+          state.familyId = fam.id;
+          state.role = fam.isMine ? ROLES.OWNER : ROLES.VIEWER;
+          await loadFamilyData(fam.id);
+          showToast("✅ تم الدخول: " + fam.name, "success");
+          setTimeout(function() { location.reload(); }, 1000);
+        }
+      });
+      list.appendChild(btn);
+    });
+
+    browser.querySelector("#closeFamiliesBrowser").addEventListener("click", function() {
+      browser.remove();
+    });
+    document.body.appendChild(browser);
+  } catch (error) {
+    console.error("خطأ:", error);
+    showToast("❌ فشل البحث: " + error.message, "error", 5000);
+  }
+}
+
+// ربط الزر بعد تحميل الصفحة
+setTimeout(function() {
+  const btn = document.getElementById("btnBrowseFamilies");
+  if (btn) {
+    btn.addEventListener("click", openFamiliesBrowser);
+    console.log("✅ تم ربط زر استعراض العائلات");
+  }
+}, 1500);
+     
+</script>
+
+</body>
+</html>
