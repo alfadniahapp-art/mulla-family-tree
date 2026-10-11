@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شجرة أنساب الفادنية شرق </title>
-    <link rel="manifest" href="manifest.json">
+    <title>شجرة أنساب الفادنية</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
@@ -678,7 +679,7 @@ body.dark .drawer-item.active {
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 700;
+  z-index: 999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1527,7 +1528,6 @@ body.dark .tree-node-title {
 }
 
     </style>
-</>
 <body>
       
   <!-- ===== شاشة التحميل ===== -->
@@ -1547,18 +1547,9 @@ body.dark .tree-node-title {
     <h1 class="welcome-title">شجرة أنساب الفادنية شرق</h1>
     <p class="welcome-subtitle">تطبيق شجرة العائلة التفاعلي</p>
     <div class="welcome-buttons">
-      <button id="btnGoogleLogin" class="btn-primary">
-        <svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:middle;margin-left:8px;">
-          <path fill="#0a3d2e" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#0a3d2e" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#0a3d2e" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#0a3d2e" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        الدخول بحساب Google
-      </button>
+      
       <button id="btnJoinByCode" class="btn-secondary">
-  🔑 الدخول بكود دعوة
-</button>
+🔐 الدخول</button>
     </div>
     <p class="welcome-note">بياناتك محفوظة بأمان في السحابة</p>
     <p class="welcome-credit">تصميم: Abu Almulla<br>0922008009</p>
@@ -1942,6 +1933,54 @@ body.dark .tree-node-title {
 
   <!-- ===== إشعارات Toast ===== -->
   <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ============ نافذة الدخول الجديدة ============ -->
+<div id="loginModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content" style="max-width:360px;">
+    <div class="modal-header">
+      <h2>🔐 اختر نوع الدخول</h2>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+
+        <button id="btnLoginOwner" style="padding:16px; background:linear-gradient(145deg,#0a3d2e,#145a44); color:#d4af37; border:2px solid #d4af37; border-radius:14px; font-size:18px; font-weight:700; font-family:inherit; cursor:pointer;">
+          👑 مالك
+        </button>
+
+        <button id="btnLoginEditor" style="padding:16px; background:linear-gradient(145deg,#0a3d2e,#145a44); color:#d4af37; border:2px solid #d4af37; border-radius:14px; font-size:18px; font-weight:700; font-family:inherit; cursor:pointer;">
+          ✏️ محرر
+        </button>
+
+        <button id="btnLoginViewer" style="padding:16px; background:linear-gradient(145deg,#0a3d2e,#145a44); color:#d4af37; border:2px solid #d4af37; border-radius:14px; font-size:18px; font-weight:700; font-family:inherit; cursor:pointer;">
+          👁️ مشاهد
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+   </div>
+
+<!-- ============ نافذة كلمة السر ============ -->
+<div id="passwordModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content" style="max-width:340px;">
+    <div class="modal-header">
+      <h2 id="passwordTitle">🔑 أدخل كلمة السر</h2>
+      <button id="btnClosePassword" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+      <input type="password" id="inputPassword" placeholder="كلمة السر" maxlength="30" style="width:100%; padding:16px; font-size:18px; text-align:center; letter-spacing:2px; border:2px solid #d4af37; border-radius:12px; background:var(--bg); color:var(--text); font-family:inherit;">
+      <p id="passwordError" style="color:#dc2626; font-size:13px; text-align:center; margin-top:10px; min-height:18px;"></p>
+    </div>
+    <div class="modal-footer">
+      <button id="btnCancelPassword" class="btn-secondary">إلغاء</button>
+      <button id="btnConfirmPassword" class="btn-primary">دخول</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== نافذة الانضمام بكود ===== -->
 <div id="joinModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center;">
@@ -2453,7 +2492,7 @@ async function createNewFamily(user) {
     });
 
     const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
-    await setDoc(metaRef, {
+    await setDoc(metaRef,{
       name: platformName,
       editorCode: editorCode,
       viewerCode: viewerCode,
@@ -2540,24 +2579,78 @@ async function loadFamilyData(familyId) {
 
 // ===== 14. المستمعين الفوريين =====
   function startRealtimeListeners(familyId) {
-  const personsRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.PERSONS);
-  const unsubPersons = onSnapshot(personsRef, (snapshot) => {
-    state.persons = snapshot.docs.map((d) => {
-      const data = d.data();
-      return {
-        id: d.id,
-        name: data.name || "",
-        gender: data.gender || "male",
-        title: data.title || "",
-        fatherId: data.fatherId || null,
-        motherId: data.motherId || null,
-        birthYear: data.birthYear || null,
-        deathYear: data.deathYear || null,
-        isAlive: data.isAlive || "alive",
-        relationType: data.relationType || "biological",
-        notes: data.notes || "",
-        order: data.order || 0
-      };
+  // تنظيف القديم إن وُجد
+  cleanupListeners();
+
+  const baseUrl = "https://firestore.googleapis.com/v1/projects/mulla-family-tree/databases/(default)/documents/families/" + familyId;
+
+  function parseFirestoreDoc(doc) {
+    const id = doc.name.split("/").pop();
+    const fields = doc.fields || {};
+    const obj = { id: id };
+    Object.keys(fields).forEach(k => {
+      const f = fields[k];
+      if (f.stringValue !== undefined) obj[k] = f.stringValue;
+      else if (f.integerValue !== undefined) obj[k] = parseInt(f.integerValue);
+      else if (f.doubleValue !== undefined) obj[k] = f.doubleValue;
+      else if (f.booleanValue !== undefined) obj[k] = f.booleanValue;
+      else if (f.nullValue !== undefined) obj[k] = null;
+      else if (f.timestampValue !== undefined) obj[k] = f.timestampValue;
+      else if (f.arrayValue !== undefined) obj[k] = (f.arrayValue.values || []).map(v => v.stringValue || v.integerValue);
+    });
+    return obj;
+  }
+
+  async function fetchCollection(name) {
+    const res = await fetch(baseUrl + "/" + name + "?pageSize=300");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    return (data.documents || []).map(parseFirestoreDoc);
+  }
+
+  async function loadAll() {
+    try {
+      // الأفراد
+      const persons = await fetchCollection("persons");
+      state.persons = persons.map(p => ({
+        id: p.id,
+        name: p.name || "",
+        gender: p.gender || "male",
+        title: p.title || "",
+        fatherId: p.fatherId || null,
+        motherId: p.motherId || null,
+        birthYear: p.birthYear || null,
+        deathYear: p.deathYear || null,
+        isAlive: p.isAlive || "alive",
+        relationType: p.relationType || "biological",
+        notes: p.notes || "",
+        order: p.order || 0
+      }));
+      console.log("✅ Persons loaded:", state.persons.length);
+
+      // الزيجات
+      const unions = await fetchCollection("unions");
+      state.unions = unions;
+
+      // علاقات الأب/الابن
+      const pc = await fetchCollection("parent_child");
+      state.parentChild = pc;
+
+      updateStats();
+      renderTree();
+    } catch (error) {
+      console.error("❌ فشل تحميل البيانات:", error);
+      showToast("❌ فشل تحميل الأفراد: " + error.message, "error", 5000);
+    }
+  }
+
+  // تحميل فوري
+  loadAll();
+
+  // تحديث كل 10 ثواني
+  const interval = setInterval(loadAll, 10000);
+  state.unsubscribers.push(() => clearInterval(interval));
+}
     });
     console.log("PERSONS LOADED:", state.persons.length);
     updateStats();
@@ -2602,16 +2695,102 @@ function cleanupListeners() {
 
 
 // ===== 16. الدخول والخروج =====
-async function handleGoogleLogin() {
+
+  // ===== 16.5 نظام الدخول الجديد =====
+let loginRole = null;
+
+function openLoginModal() {
+  var m = document.getElementById("loginModal");
+  if (m) {
+    m.classList.remove("hidden");
+    m.style.display = "flex";
+  }
+}
+
+function openPasswordModal(role) {
+  loginRole = role;
+  const titles = {
+    owner: "👑 كلمة سر المالك",
+    editor: "✏️ كلمة سر المحرر",
+    viewer: "👁️ كلمة سر المشاهد"
+  };
+  document.getElementById("passwordTitle").textContent = titles[role] || "🔑 كلمة السر";
+  document.getElementById("inputPassword").value = "";
+  document.getElementById("passwordError").textContent = "";
+  hide("loginModal");
+  var pm = document.getElementById("passwordModal");
+if (pm) {
+  pm.classList.remove("hidden");
+  pm.style.display = "flex";
+}
+  setTimeout(() => document.getElementById("inputPassword").focus(), 300);
+}
+
+async function confirmPassword() {
+  const input = document.getElementById("inputPassword");
+  const errorEl = document.getElementById("passwordError");
+  const entered = input.value.trim();
+
+  if (!entered) {
+    errorEl.textContent = "❌ أدخل كلمة السر";
+    return;
+  }
+
   try {
-    showToast("جارٍ تسجيل الدخول...", "info");
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    if (error.code === "auth/popup-closed-by-user") {
-      showToast("تم الإلغاء", "warning");
-    } else {
-      showToast("❌ فشل تسجيل الدخول", "error");
+    // جلب meta من Firebase
+    const familyId = "fam_muz7zt3m3mlua5lfg";
+    const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
+    const metaSnap = await getDoc(metaRef);
+
+    if (!metaSnap.exists()) {
+      errorEl.textContent = "❌ لم يتم العثور على بيانات العائلة";
+      return;
     }
+
+    const meta = metaSnap.data();
+    let success = false;
+
+    if (loginRole === "owner") {
+      if (entered === meta.ownerPassword) success = true;
+    } else if (loginRole === "editor") {
+      if (meta.editorEnabled === false) {
+        errorEl.textContent = "❌ دور المحرر موقوف حالياً";
+        return;
+      }
+      if (entered === meta.editorCode) success = true;
+    } else if (loginRole === "viewer") {
+      if (meta.viewerEnabled === false) {
+        errorEl.textContent = "❌ دور المشاهد موقوف حالياً";
+        return;
+      }
+      if (entered === meta.viewerCode) success = true;
+    }
+
+    if (success) {
+      state.role = loginRole === "owner" ? ROLES.OWNER : (loginRole === "editor" ? ROLES.EDITOR : ROLES.VIEWER);
+      storage.set("userRole", state.role);
+      state.familyId = familyId;
+      storage.set(STORAGE_KEYS.FAMILY_ID, familyId);
+
+      hide("passwordModal");
+      showToast("✅ مرحباً " + (loginRole === "owner" ? "أيها المالك" : loginRole === "editor" ? "أيها المحرر" : "أيها المشاهد"), "success");
+
+      await loadFamilyData(familyId);
+      showMainApp();
+      updateDrawerUserInfo();
+
+      // تعيين state.user وهمي (لأن الكود القديم يعتمد عليه)
+      if (!state.user) {
+        state.user = { uid: "local_" + loginRole, email: null, displayName: "مستخدم" };
+      }
+    } else {
+      errorEl.textContent = "❌ كلمة السر غير صحيحة";
+      input.value = "";
+      input.focus();
+    }
+  } catch (error) {
+    console.error("خطأ:", error);
+    errorEl.textContent = "❌ حدث خطأ: " + error.message;
   }
 }
 
@@ -4496,11 +4675,34 @@ function handleDrawerNav(nav) {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🔗 ربط الأحداث...");
 
-  const btnGoogle = document.getElementById("btnGoogleLogin");
-  if (btnGoogle) btnGoogle.addEventListener("click", handleGoogleLogin);
 
   const btnJoin = document.getElementById("btnJoinByCode");
-  if (btnJoin) btnJoin.addEventListener("click", openJoinModal);
+  if (btnJoin) btnJoin.addEventListener("click", openLoginModal);
+  
+// ربط أزرار الدخول الجديدة
+const btnLoginOwner = document.getElementById("btnLoginOwner");
+if (btnLoginOwner) btnLoginOwner.addEventListener("click", () => openPasswordModal("owner"));
+
+const btnLoginEditor = document.getElementById("btnLoginEditor");
+if (btnLoginEditor) btnLoginEditor.addEventListener("click", () => openPasswordModal("editor"));
+
+const btnLoginViewer = document.getElementById("btnLoginViewer");
+if (btnLoginViewer) btnLoginViewer.addEventListener("click", () => openPasswordModal("viewer"));
+
+const btnConfirmPassword = document.getElementById("btnConfirmPassword");
+if (btnConfirmPassword) btnConfirmPassword.addEventListener("click", confirmPassword);
+
+const btnCancelPassword = document.getElementById("btnCancelPassword");
+if (btnCancelPassword) btnCancelPassword.addEventListener("click", () => hide("passwordModal"));
+
+const btnClosePassword = document.getElementById("btnClosePassword");
+if (btnClosePassword) btnClosePassword.addEventListener("click", () => hide("passwordModal"));
+
+const inputPassword = document.getElementById("inputPassword");
+if (inputPassword) inputPassword.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") confirmPassword();
+});
+
 
   const btnConfirmJoin = document.getElementById("btnConfirmJoin");
   if (btnConfirmJoin) btnConfirmJoin.addEventListener("click", confirmJoin);
@@ -4634,18 +4836,21 @@ function updateDrawerUserInfo() {
   const nameEl = document.getElementById("drawerUserName");
   const roleEl = document.getElementById("drawerUserRole");
 
-  if (!state.user) return;
+  // اسم افتراضي للدخول بكلمة سر
+  const savedRole = state.role || storage.get("userRole", null);
+  const roleNames = { "owner": "👑 مالك", "editor": "✏️ محرر", "viewer": "👁️ مشاهد" };
+  const roleText = roleNames[savedRole] || "—";
 
-  const displayName = state.user.displayName || state.user.email || "مستخدم";
-  const initials = displayName.charAt(0).toUpperCase();
-
-  if (avatarEl) avatarEl.textContent = initials;
-  if (nameEl) nameEl.textContent = displayName;
-
-  if (roleEl) {
-    const roleNames = { "owner": "👑 مالك", "editor": "✏️ محرر", "viewer": "👁️ مشاهد" };
-    roleEl.textContent = roleNames[state.role] || "—";
+  if (state.user && state.user.displayName) {
+    const displayName = state.user.displayName;
+    if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase();
+    if (nameEl) nameEl.textContent = displayName;
+  } else {
+    if (avatarEl) avatarEl.textContent = savedRole === "owner" ? "م" : (savedRole === "editor" ? "ح" : "ش");
+    if (nameEl) nameEl.textContent = savedRole === "owner" ? "المالك" : (savedRole === "editor" ? "المحرر" : "المشاهد");
   }
+
+  if (roleEl) roleEl.textContent = roleText;
 }
 
 
@@ -4867,12 +5072,7 @@ setTimeout(function() {
 }, 1500);
      
 </script>
+  
 
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-</script>
-    
 </body>
 </html>
