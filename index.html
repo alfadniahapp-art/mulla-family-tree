@@ -1026,14 +1026,20 @@ body.dark .invite-code {
 
 .tree-node-badge {
   position: absolute;
-  top: -6px;
-  left: -6px;
+  top: -14px;
+  right: -8px;
+width: 55px;
+box-sizing: border-box;
+  text-align: center;
   background: var(--gold);
   color: var(--primary-dark);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  z-index: 6;
+  box-sizing: border-box;
 }
 
 /* ===== خطوط الاتصال ===== */
@@ -1483,22 +1489,60 @@ body.dark .code-row input {
   color: rgba(255, 255, 255, 0.8);
   margin-top: 3px;
 }
-.tree-node-level {
+ .tree-node-header {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--primary);
-  color: var(--gold);
-  font-size: 11px;
-  font-weight: 700;
-  width: 22px;
-  height: 22px;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 6;
+}
+
+.tree-node-level {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
+  background: var(--gold);
+  color: var(--primary-dark);
+  font-size: 11px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--gold);
-  z-index: 5;
+  border: 2px solid var(--primary);
+  box-sizing: border-box;
+}
+
+.tree-node-number {
+  min-width: 42px;
+  padding: 2px 6px;
+  text-align: center;
+  background: var(--gold);
+  color: var(--primary-dark);
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  box-sizing: border-box;
+}
+
+.tree-node-badge-status {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.tree-node-badge-status.alive {
+  background: #16a34a;
+}
+
+.tree-node-badge-status.deceased {
+  background: #1a1a1a;
 }
 
 body.dark .tree-node-level {
@@ -2525,52 +2569,38 @@ async function createNewFamily(user) {
 
 
 // ===== 13. تحميل بيانات العائلة ====
-  
-async function loadFamilyData(familyId) {
+  async function loadFamilyData(familyId) {
   try {
     console.log("📥 تحميل:", familyId);
-
-    // 1. جلب بيانات العائلة
-    const familyRef = doc(db, COLLECTIONS.FAMILIES, familyId);
-    const familySnap = await getDoc(familyRef);
-
-    // 2. جلب meta
-    const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
-    const metaSnap = await getDoc(metaRef);
-    if (metaSnap.exists()) {
-      state.familyMeta = metaSnap.data();
-      if (state.familyMeta.name) updatePlatformTitle(state.familyMeta.name);
+    const baseUrl = "https://firestore.googleapis.com/v1/projects/mulla-family-tree/databases/(default)/documents/families/" + familyId;
+    const familyRes = await fetch(baseUrl);
+    const familyDoc = familyRes.ok ? await familyRes.json() : null;
+    const metaRes = await fetch(baseUrl + "/meta/info");
+    if (metaRes.ok) {
+      const metaDoc = await metaRes.json();
+      const meta = {};
+      Object.keys(metaDoc.fields || {}).forEach(k => {
+        const f = metaDoc.fields[k];
+        if (f.stringValue !== undefined) meta[k] = f.stringValue;
+        else if (f.booleanValue !== undefined) meta[k] = f.booleanValue;
+        else if (f.integerValue !== undefined) meta[k] = parseInt(f.integerValue);
+      });
+      state.familyMeta = meta;
+      if (meta.name) updatePlatformTitle(meta.name);
     }
-
-    // 3. ✅ الأهم: فحص هل أنت المالك (ownerId)؟
     let isOwnerCheck = false;
-    if (familySnap.exists()) {
-      const famData = familySnap.data();
-      console.log("👑 ownerId:", famData.ownerId);
-      console.log("👤 uid:", state.user.uid);
-      if (famData.ownerId === state.user.uid) {
+    if (familyDoc && familyDoc.fields && familyDoc.fields.ownerId) {
+      const ownerId = familyDoc.fields.ownerId.stringValue;
+      if (ownerId === "eDyLZBg8VGTf6BOqLocPLiR7Net2") {
         isOwnerCheck = true;
         state.role = ROLES.OWNER;
-        console.log("✅ أنت المالك");
       }
     }
-
-    // 4. إن لم تكن المالك، ابحث في members
     if (!isOwnerCheck) {
-      const memberRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.MEMBERS, state.user.uid);
-      const memberSnap = await getDoc(memberRef);
-      if (memberSnap.exists()) {
-        state.role = memberSnap.data().role || ROLES.VIEWER;
-      } else {
-      }
-      console.log("ℹ️ دورك من members:", state.role);
+      const savedRole = storage.get("userRole", null);
+      state.role = savedRole || ROLES.VIEWER;
     }
-
-    // 5. خزّن الدور محلياً
     storage.set("userRole", state.role);
-    console.log("✅ الدور النهائي:", state.role);
-
-    // 6. ابدأ المزامنة
     startRealtimeListeners(familyId);
   } catch (error) {
     console.error("خطأ في التحميل:", error);
@@ -2624,8 +2654,25 @@ async function loadFamilyData(familyId) {
         isAlive: p.isAlive || "alive",
         relationType: p.relationType || "biological",
         notes: p.notes || "",
-        order: p.order || 0
+order: p.order || 0,
+number: p.number || 0
       }));
+      // ✅ ترقيم الأفراد: الجيل × 100 + تسلسل
+var levelGroups = {};
+state.persons.forEach(function(p) {
+  var lvl = getPersonLevel(p.id);
+  if (!levelGroups[lvl]) levelGroups[lvl] = [];
+  levelGroups[lvl].push(p);
+});
+Object.keys(levelGroups).forEach(function(lvl) {
+  var arr = levelGroups[lvl];
+  arr.sort(function(a, b) {
+    return (a.name || "").localeCompare(b.name || "", "ar");
+  });
+  arr.forEach(function(p, i) {
+    p.number = (parseInt(lvl) * 100) + (i + 1);
+  });
+});
       console.log("✅ Persons loaded:", state.persons.length);
 
       // الزيجات
@@ -2651,38 +2698,6 @@ async function loadFamilyData(familyId) {
   const interval = setInterval(loadAll, 10000);
   state.unsubscribers.push(() => clearInterval(interval));
 }
-    });
-    console.log("PERSONS LOADED:", state.persons.length);
-    updateStats();
-    renderTree();
-  });
-  state.unsubscribers.push(unsubPersons);
-
-  const unionsRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.UNIONS);
-  const unsubUnions = onSnapshot(unionsRef, (snapshot) => {
-    state.unions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-    renderTree();
-  });
-  state.unsubscribers.push(unsubUnions);
-
-  const pcRef = collection(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.PARENT_CHILD);
-  const unsubPC = onSnapshot(pcRef, (snapshot) => {
-    state.parentChild = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-    renderTree();
-  });
-  state.unsubscribers.push(unsubPC);
-
-  const metaRef = doc(db, COLLECTIONS.FAMILIES, familyId, COLLECTIONS.META, "info");
-  const unsubMeta = onSnapshot(metaRef, (snapshot) => {
-    if (snapshot.exists()) {
-      state.familyMeta = snapshot.data();
-      if (state.familyMeta.name) updatePlatformTitle(state.familyMeta.name);
-      updateSettingsUI();
-    }
-  });
-  state.unsubscribers.push(unsubMeta);
-}
-  
 
 
 // ===== 15. تنظيف المستمعين =====
@@ -3351,21 +3366,22 @@ function renderTree() {
     nodeEl.style.width = NODE_WIDTH + "px";
     nodeEl.dataset.personId = person.id;
 
-    let badgeHtml = "";
-    if (person.relationType === "adopted") badgeHtml = '<span class="tree-node-badge">تبنّي</span>';
-    if (person.relationType === "fostered") badgeHtml = '<span class="tree-node-badge">كفالة</span>';
-    if (person.isAlive === "deceased") badgeHtml = '<span class="tree-node-badge">متوفى</span>';
-
+    let badgeHtml = '<span class="tree-node-badge-status ' +
+  (person.isAlive === "deceased" ? 'deceased' : 'alive') +
+  '"></span>';
     const level = getPersonLevel(person.id);
 
     nodeEl.innerHTML = `
-      <div class="tree-node-card">
-        <div class="tree-node-level">${level}</div>
-        ${badgeHtml}
-        <div class="tree-node-name">${escapeHtml(person.name)}</div>
-        ${person.title ? `<div class="tree-node-title">${escapeHtml(person.title)}</div>` : ""}
-      </div>
-    `;
+  <div class="tree-node-header">
+    <div class="tree-node-level">${level}</div>
+    <div class="tree-node-number">#${person.number || "—"}</div>
+    ${badgeHtml}
+  </div>
+  <div class="tree-node-card">
+    <div class="tree-node-name">${escapeHtml(person.name)}</div>
+    ${person.title ? `<div class="tree-node-title">${escapeHtml(person.title)}</div>` : ""}
+  </div>
+`;
 
     let longPressTimer = null;
     let longPressFired = false;
@@ -4310,8 +4326,10 @@ function openRelationModal(personId) {
       </select>
     </div>
     <div class="form-group">
-      <label>الفرد المرتبط</label>
-      <select id="selectRelationTarget">
+      <label>🔍 ابحث عن اسم</label>
+<input type="text" id="relationTargetSearch" placeholder="اكتب اسم..." style="width:100%; padding:10px; border:2px solid var(--gold); border-radius:8px; font-size:15px; background:var(--bg); color:var(--text); font-family:inherit; margin-bottom:8px;">
+<select id="selectRelationTarget">
+    
         <option value="">— اختر —</option>
       </select>
     </div>
@@ -4343,8 +4361,21 @@ function openRelationModal(personId) {
   });
 
   fillRelationTargets("spouse");
-  show("relationModal");
+
+const searchInput = document.getElementById("relationTargetSearch");
+if (searchInput) {
+  searchInput.oninput = function() {
+    const q = this.value.toLowerCase().trim();
+    const sel = document.getElementById("selectRelationTarget");
+    if (!sel) return;
+    Array.from(sel.options).forEach(opt => {
+      if (!opt.value) return;
+      opt.style.display = opt.text.toLowerCase().indexOf(q) !== -1 ? "" : "none";
+    });
+  };
 }
+
+show("relationModal");
 
 
 function fillRelationTargets(kind) {
@@ -4377,10 +4408,8 @@ function fillRelationTargets(kind) {
 
   candidates = sortPersonsByName(candidates);
   targetSelect.innerHTML = '<option value="">— اختر —</option>' +
-    candidates.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${p.gender === "male" ? "ذكر" : "أنثى"})</option>`).join("");
+  candidates.map(p => `<option value="${p.id}">#${p.number || "—"} — ${escapeHtml(p.name)} (${p.gender === "male" ? "ذكر" : "أنثى"})</option>`).join("");
 }
-
-
 async function saveRelationFromModal() {
   const kind = document.getElementById("selectRelationKind").value;
   const targetId = document.getElementById("selectRelationTarget").value;
@@ -5070,7 +5099,7 @@ setTimeout(function() {
     console.log("✅ تم ربط زر استعراض العائلات");
   }
 }, 1500);
-     
+}); 
 </script>
   
 
